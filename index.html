@@ -264,19 +264,17 @@
         const [textColor, setTextColor] = useState('#ffffff');
         // 六芒星SVGをBase64化してデフォルト画像に使用
         const defaultStar6 = 'data:image/svg+xml;base64,' + btoa(`
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
-                <rect width="300" height="300" fill="#f8f8f8"/>
-                <polygon points="150,30 172,95 240,95 185,135 207,200 150,162 93,200 115,135 60,95 128,95"
-                    fill="none" stroke="#cccccc" stroke-width="1.5"/>
-                <polygon points="150,30 128,95 60,95 115,135 93,200 150,162 207,200 185,135 240,95 172,95"
-                    fill="none" stroke="#cccccc" stroke-width="1.5"/>
-                <g transform="translate(150,150)">
-                    <polygon points="0,-100 86.6,50 -86.6,50" fill="none" stroke="#aaaaaa" stroke-width="2"/>
-                    <polygon points="0,100 86.6,-50 -86.6,-50" fill="none" stroke="#aaaaaa" stroke-width="2"/>
-                </g>
-            </svg>
-        `);
-        const [previewImage, setPreviewImage] = useState(defaultStar6);
+	<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
+        <rect width="300" height="300" fill="#f8f8f8"/>
+        <g transform="translate(150,150)">
+            <polygon points="0,-110 95.3,55 -95.3,55"
+                fill="none" stroke="#bbbbbb" stroke-width="2"/>
+            <polygon points="0,110 95.3,-55 -95.3,-55"
+                fill="none" stroke="#bbbbbb" stroke-width="2"/>
+        </g>
+        </svg>
+	`);
+	const [previewImage, setPreviewImage] = useState(defaultStar6);
         const [photoPos, setPhotoPos] = useState({ x: 0, y: 0 });
         const [photoScale, setPhotoScale] = useState(1.0);
         const [textPos, setTextPos] = useState({ x: 90, y: 180 });
