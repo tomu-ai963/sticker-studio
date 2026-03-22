@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Sticker Studio Free</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --background: #f1f5f9;
+            --surface: #ffffff;
+            --border: #e2e8f0;
+            --text: #1e293b;
+            --success: #10b981;
+        }
+        body {
+            margin: 0;
+            background: var(--background);
+            font-family: sans-serif;
+            color: var(--text);
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .app-container {
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 20px;
+            padding-bottom: 140px;
+        }
+        .app-header { text-align: center; margin-bottom: 15px; }
+        .app-header h1 { font-size: 1.4rem; font-weight: 800; margin: 0; }
+        .app-header span { font-size: 0.8rem; color: var(--primary); font-weight: 600; }
+        .studio-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin: 0 auto;
+            background: var(--surface);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 4px solid #fff;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            touch-action: none;
+        }
+        .sticker-mask {
+            position: absolute; top: 0; left: 0;
+            width: 300px; height: 300px;
+            z-index: 10; pointer-events: none;
+        }
+        .photo-layer {
+            position: absolute; top: 0; left: 0;
+            transform-origin: top left;
+            z-index: 5; pointer-events: auto; cursor: grab;
+        }
+        .photo-layer:active { cursor: grabbing; }
+        .sticker-label {
+            position: absolute; z-index: 20;
+            font-weight: 900;
+            text-shadow: 2px 2px 0 #000, -1px -1px 0 #000;
+            padding: 5px 10px;
+            white-space: nowrap;
+            user-select: none;
+            pointer-events: auto;
+            cursor: move;
+            border-radius: 4px;
+        }
+        .card {
+            background: var(--surface);
+            padding: 15px;
+            border-radius: 18px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            margin-bottom: 15px;
+            border: 1px solid var(--border);
+        }
+        .card-title {
+            font-size: 0.8rem; font-weight: 800;
+            color: #64748b; margin-bottom: 10px;
+            display: block; text-transform: uppercase;
+        }
+        .control-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+        .btn-option {
+            padding: 12px 5px;
+            border-radius: 12px;
+            border: 2px solid var(--border);
+            background: #fff;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+        .btn-option.active {
+            border-color: var(--primary);
+            background: #eff6ff;
+            color: var(--primary);
+        }
+        input[type="text"] {
+            width: 100%; padding: 14px;
+            border-radius: 10px; border: 1px solid var(--border);
+            box-sizing: border-box; font-size: 1rem; margin-bottom: 10px;
+        }
+        input[type="color"] {
+            width: 100%; height: 45px;
+            border-radius: 10px; border: none; cursor: pointer;
+        }
+        input[type="range"] { width: 100%; cursor: pointer; margin: 0; }
+        .range-row {
+            display: flex; align-items: center; gap: 8px;
+            margin-bottom: 8px;
+        }
+        .range-label { font-size: 0.75rem; color: #64748b; white-space: nowrap; }
+        .btn-main {
+            position: fixed; bottom: 15px;
+            left: 50%; transform: translateX(-50%);
+            width: calc(100% - 30px); max-width: 450px;
+            background: var(--success); color: #fff;
+            font-size: 1.1rem; padding: 20px;
+            border: none; border-radius: 16px;
+            font-weight: 800; cursor: pointer;
+            box-shadow: 0 10px 20px rgba(16,185,129,0.3);
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+    const { useState, useRef, useEffect } = React;
+
+    /* ── ハートパス生成（丸みたっぷり・面積広め） ── */
+    // 左右の円をベースにした正統派ハート
+    // cx,cy = 中心, size = 半径に相当するスケール
+    function heartPath(cx, cy, size) {
+        const s = size;
+        // 上部の左右の丸の中心
+        const lx = cx - s * 0.27, rx = cx + s * 0.27;
+        const ty = cy - s * 0.18;
+        // 円の半径
+        const r = s * 0.37;
+        // 底点
+        const bx = cx, by = cy + s * 0.52;
+        // 左円の接線開始点（左円の一番左）
+        const leftmost = lx - r;
+        // 左円の下側接線点
+        const ltx = lx - r * 0.3, lty = ty + r * 0.95;
+        // 右円の下側接線点
+        const rtx = rx + r * 0.3, rty = ty + r * 0.95;
+
+        return [
+            `M ${cx} ${ty}`,
+            // 左へ → 左円の上を回り込む
+            `C ${cx - s*0.07} ${ty - s*0.22}, ${leftmost} ${ty - s*0.38}, ${leftmost} ${ty}`,
+            // 左円の下半分
+            `C ${leftmost} ${ty + r*0.75}, ${ltx} ${lty}, ${bx} ${by}`,
+            // 右円の下半分（対称）
+            `C ${rtx} ${rty}, ${lx + (rx - lx) + r} ${ty + r*0.75}, ${lx + (rx - lx) + r} ${ty}`,
+            // 右円の上を回り込んで中央へ
+            `C ${lx + (rx - lx) + r} ${ty - s*0.38}, ${cx + s*0.07} ${ty - s*0.22}, ${cx} ${ty}`,
+            'Z'
+        ].join(' ');
+    }
+
+    /* ── 丸みのある星形パス（外半径・内半径・コーナー半径） ── */
+    function roundedStarPath(cx, cy, outerR, innerR, points, cornerR) {
+        // 各頂点の座標を計算し、arc でコーナーを丸める
+        const PI2 = Math.PI * 2;
+        const step = PI2 / points;
+        const halfStep = step / 2;
+        const verts = [];
+        for (let i = 0; i < points; i++) {
+            const outerAngle = i * step - Math.PI / 2;
+            const innerAngle = outerAngle + halfStep;
+            verts.push({ x: cx + outerR * Math.cos(outerAngle), y: cy + outerR * Math.sin(outerAngle), isOuter: true });
+            verts.push({ x: cx + innerR * Math.cos(innerAngle), y: cy + innerR * Math.sin(innerAngle), isOuter: false });
+        }
+        // シンプルに各頂点をbezierでなだらかに繋ぐ
+        const n = verts.length;
+        let d = '';
+        for (let i = 0; i < n; i++) {
+            const prev = verts[(i - 1 + n) % n];
+            const curr = verts[i];
+            const next = verts[(i + 1) % n];
+            const r = curr.isOuter ? cornerR : cornerR * 0.5;
+            const dx1 = curr.x - prev.x, dy1 = curr.y - prev.y;
+            const len1 = Math.hypot(dx1, dy1);
+            const dx2 = next.x - curr.x, dy2 = next.y - curr.y;
+            const len2 = Math.hypot(dx2, dy2);
+            const t1 = Math.min(r / len1, 0.4);
+            const t2 = Math.min(r / len2, 0.4);
+            const p1x = curr.x - dx1 * t1, p1y = curr.y - dy1 * t1;
+            const p2x = curr.x + dx2 * t2, p2y = curr.y + dy2 * t2;
+            if (i === 0) d += `M ${p1x} ${p1y}`;
+            else d += ` L ${p1x} ${p1y}`;
+            d += ` Q ${curr.x} ${curr.y} ${p2x} ${p2y}`;
+        }
+        return d + ' Z';
+    }
+
+    /* ── Canvas描画用 ハートのクリップパス（SVGと同じ形） ── */
+    function drawHeartClip(ctx, cx, cy, size) {
+        const s = size;
+        const lx = cx - s * 0.27, rx = cx + s * 0.27;
+        const ty = cy - s * 0.18;
+        const r = s * 0.37;
+        const bx = cx, by = cy + s * 0.52;
+        const leftmost = lx - r;
+        const ltx = lx - r * 0.3, lty = ty + r * 0.95;
+        const rtx = rx + r * 0.3, rty = ty + r * 0.95;
+        const rightmost = lx + (rx - lx) + r;
+
+        ctx.beginPath();
+        ctx.moveTo(cx, ty);
+        ctx.bezierCurveTo(cx - s*0.07, ty - s*0.22, leftmost, ty - s*0.38, leftmost, ty);
+        ctx.bezierCurveTo(leftmost, ty + r*0.75, ltx, lty, bx, by);
+        ctx.bezierCurveTo(rtx, rty, rightmost, ty + r*0.75, rightmost, ty);
+        ctx.bezierCurveTo(rightmost, ty - s*0.38, cx + s*0.07, ty - s*0.22, cx, ty);
+        ctx.closePath();
+        ctx.clip();
+    }
+
+    /* ── Canvas描画用 丸み星のクリップパス ── */
+    function drawRoundedStarClip(ctx, cx, cy, outerR, innerR, points, cornerR) {
+        const PI2 = Math.PI * 2;
+        const step = PI2 / points;
+        const halfStep = step / 2;
+        const verts = [];
+        for (let i = 0; i < points; i++) {
+            const outerAngle = i * step - Math.PI / 2;
+            const innerAngle = outerAngle + halfStep;
+            verts.push({ x: cx + outerR * Math.cos(outerAngle), y: cy + outerR * Math.sin(outerAngle), isOuter: true });
+            verts.push({ x: cx + innerR * Math.cos(innerAngle), y: cy + innerR * Math.sin(innerAngle), isOuter: false });
+        }
+        const n = verts.length;
+        ctx.beginPath();
+        for (let i = 0; i < n; i++) {
+            const prev = verts[(i - 1 + n) % n];
+            const curr = verts[i];
+            const next = verts[(i + 1) % n];
+            const r = curr.isOuter ? cornerR : cornerR * 0.5;
+            const dx1 = curr.x - prev.x, dy1 = curr.y - prev.y;
+            const len1 = Math.hypot(dx1, dy1);
+            const dx2 = next.x - curr.x, dy2 = next.y - curr.y;
+            const len2 = Math.hypot(dx2, dy2);
+            const t1 = Math.min(r / len1, 0.4);
+            const t2 = Math.min(r / len2, 0.4);
+            const p1x = curr.x - dx1 * t1, p1y = curr.y - dy1 * t1;
+            const p2x = curr.x + dx2 * t2, p2y = curr.y + dy2 * t2;
+            if (i === 0) ctx.moveTo(p1x, p1y);
+            else ctx.lineTo(p1x, p1y);
+            ctx.quadraticCurveTo(curr.x, curr.y, p2x, p2y);
+        }
+        ctx.closePath();
+        ctx.clip();
+    }
+
+    function App() {
+        const [shape, setShape] = useState('circle');
+        const [text, setText] = useState('文字を入力');
+        const [textColor, setTextColor] = useState('#ffffff');
+        // 六芒星SVGをBase64化してデフォルト画像に使用
+        const defaultStar6 = 'data:image/svg+xml;base64,' + btoa(`
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
+                <rect width="300" height="300" fill="#f8f8f8"/>
+                <polygon points="150,30 172,95 240,95 185,135 207,200 150,162 93,200 115,135 60,95 128,95"
+                    fill="none" stroke="#cccccc" stroke-width="1.5"/>
+                <polygon points="150,30 128,95 60,95 115,135 93,200 150,162 207,200 185,135 240,95 172,95"
+                    fill="none" stroke="#cccccc" stroke-width="1.5"/>
+                <g transform="translate(150,150)">
+                    <polygon points="0,-100 86.6,50 -86.6,50" fill="none" stroke="#aaaaaa" stroke-width="2"/>
+                    <polygon points="0,100 86.6,-50 -86.6,-50" fill="none" stroke="#aaaaaa" stroke-width="2"/>
+                </g>
+            </svg>
+        `);
+        const [previewImage, setPreviewImage] = useState(defaultStar6);
+        const [photoPos, setPhotoPos] = useState({ x: 0, y: 0 });
+        const [photoScale, setPhotoScale] = useState(1.0);
+        const [textPos, setTextPos] = useState({ x: 90, y: 180 });
+        const drag = useRef({ target: null, last: { x: 0, y: 0 } });
+        const labelRef = useRef(null);
+        const canvasRef = useRef(null);
+
+        const handleStart = (target, e) => {
+            const point = e.touches ? e.touches[0] : e;
+            drag.current = { target, last: { x: point.clientX, y: point.clientY } };
+        };
+
+        useEffect(() => {
+            const handleMove = (e) => {
+                if (!drag.current.target) return;
+                if (e.cancelable) e.preventDefault();
+                const point = e.touches ? e.touches[0] : e;
+                const dx = point.clientX - drag.current.last.x;
+                const dy = point.clientY - drag.current.last.y;
+                if (drag.current.target === 'photo') {
+                    setPhotoPos(p => ({ x: p.x + dx, y: p.y + dy }));
+                } else if (drag.current.target === 'text') {
+                    setTextPos(p => ({ x: p.x + dx, y: p.y + dy }));
+                }
+                drag.current.last = { x: point.clientX, y: point.clientY };
+            };
+            const handleEnd = () => { drag.current.target = null; };
+            window.addEventListener('mousemove', handleMove);
+            window.addEventListener('mouseup', handleEnd);
+            window.addEventListener('touchmove', handleMove, { passive: false });
+            window.addEventListener('touchend', handleEnd);
+            return () => {
+                window.removeEventListener('mousemove', handleMove);
+                window.removeEventListener('mouseup', handleEnd);
+                window.removeEventListener('touchmove', handleMove);
+                window.removeEventListener('touchend', handleEnd);
+            };
+        }, []);
+
+        const download = () => {
+            const canvas = canvasRef.current;
+            const ctx = canvas.getContext('2d');
+            canvas.width = 1000;
+            canvas.height = 1000;
+            ctx.clearRect(0, 0, 1000, 1000);
+
+            const scale = 1000 / 300;
+            const cx = 500, cy = 500;
+
+            ctx.save();
+            // クリップ形状（1000x1000座標系）
+            if (shape === 'circle') {
+                ctx.beginPath(); ctx.arc(cx, cy, 485, 0, Math.PI * 2); ctx.clip();
+            } else if (shape === 'square') {
+                ctx.beginPath(); ctx.roundRect(30, 30, 940, 940, 100); ctx.clip();
+            } else if (shape === 'star') {
+                drawRoundedStarClip(ctx, cx, cy, 490, 230, 5, 60);
+            } else if (shape === 'heart') {
+                drawHeartClip(ctx, cx, cy, 595);
+            }
+
+            // 写真を描画
+            const img = new Image();
+            img.crossOrigin = "anonymous";
+            img.src = previewImage;
+            img.onload = () => {
+                // アスペクト比を保ってキャンバスを埋める
+                const aspect = img.width / img.height;
+                const baseW = aspect >= 1 ? 300 : 300 * aspect;
+                const baseH = aspect >= 1 ? 300 / aspect : 300;
+
+                ctx.drawImage(
+                    img,
+                    photoPos.x * scale,
+                    photoPos.y * scale,
+                    baseW * photoScale * scale,
+                    baseH * photoScale * scale
+                );
+                ctx.restore();
+
+                // テキスト描画
+                if (labelRef.current) {
+                    const tx = (textPos.x + labelRef.current.offsetWidth / 2) * scale;
+                    const ty = (textPos.y + labelRef.current.offsetHeight / 2) * scale;
+                    ctx.font = "900 85px sans-serif";
+                    ctx.textAlign = "center";
+                    ctx.textBaseline = "middle";
+                    ctx.strokeStyle = "#000";
+                    ctx.lineWidth = 15;
+                    ctx.strokeText(text.toUpperCase(), tx, ty);
+                    ctx.fillStyle = textColor;
+                    ctx.fillText(text.toUpperCase(), tx, ty);
+                }
+
+                // クレジット
+                ctx.font = "500 24px sans-serif";
+                ctx.fillStyle = "rgba(0,0,0,0.3)";
+                ctx.textAlign = "center";
+                ctx.fillText("Powered by Sticker Studio Free", 500, 960);
+
+                const link = document.createElement('a');
+                link.download = `sticker_${shape}.png`;
+                link.href = canvas.toDataURL("image/png");
+                link.click();
+            };
+        };
+
+        // SVGプレビュー用の形状
+        const starPath = roundedStarPath(150, 150, 140, 65, 5, 18);
+        const hPath = heartPath(150, 162, 178);
+
+        return (
+            <div className="app-container">
+                <div className="app-header">
+                    <h1>Sticker Studio</h1>
+                    <span>Free Edition</span>
+                </div>
+
+                <div className="card" style={{ textAlign: 'center' }}>
+                    <div className="studio-container">
+                        <img
+                            src={previewImage}
+                            className="photo-layer"
+                            style={{ transform: `translate(${photoPos.x}px, ${photoPos.y}px) scale(${photoScale})` }}
+                            onMouseDown={(e) => handleStart('photo', e)}
+                            onTouchStart={(e) => handleStart('photo', e)}
+                            draggable={false}
+                        />
+                        <svg className="sticker-mask" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <mask id="m">
+                                    <rect width="300" height="300" fill="white" />
+                                    {shape === 'circle' && <circle cx="150" cy="150" r="143" fill="black" />}
+                                    {shape === 'square' && <rect x="8" y="8" width="284" height="284" rx="36" fill="black" />}
+                                    {shape === 'star' && <path d={starPath} fill="black" />}
+                                    {shape === 'heart' && <path d={hPath} fill="black" />}
+                                </mask>
+                            </defs>
+                            <rect width="300" height="300" fill="#f1f5f9" mask="url(#m)" />
+                            {shape === 'circle' && <circle cx="150" cy="150" r="143" fill="none" stroke="white" strokeWidth="6" />}
+                            {shape === 'square' && <rect x="8" y="8" width="284" height="284" rx="36" fill="none" stroke="white" strokeWidth="6" />}
+                            {shape === 'star' && <path d={starPath} fill="none" stroke="white" strokeWidth="5" />}
+                            {shape === 'heart' && <path d={hPath} fill="none" stroke="white" strokeWidth="5" />}
+                        </svg>
+                        <div
+                            ref={labelRef}
+                            className="sticker-label"
+                            style={{ color: textColor, left: textPos.x, top: textPos.y, fontSize: '24px' }}
+                            onMouseDown={(e) => { e.stopPropagation(); handleStart('text', e); }}
+                            onTouchStart={(e) => { e.stopPropagation(); handleStart('text', e); }}
+                        >
+                            {text}
+                        </div>
+                    </div>
+                </div>
+
+                <div className="card">
+                    <span className="card-title">1. 形を選ぶ</span>
+                    <div className="control-grid">
+                        {['circle', 'square', 'star', 'heart'].map(s => (
+                            <button
+                                key={s}
+                                className={`btn-option ${shape === s ? 'active' : ''}`}
+                                onClick={() => {
+                                    setShape(s);
+                                    if (s === 'heart') setPhotoScale(p => Math.max(p, 1.3));
+                                }}
+                            >
+                                {s === 'circle' ? '🔵 丸' : s === 'square' ? '🟦 四角' : s === 'star' ? '⭐ 星' : '❤️ ハート'}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                <div className="card">
+                    <span className="card-title">2. カスタマイズ</span>
+                    <input
+                        type="text"
+                        value={text}
+                        onChange={(e) => setText(e.target.value)}
+                        placeholder="名前を入力"
+                        maxLength={15}
+                    />
+                    <div className="range-row">
+                        <span className="range-label">文字色</span>
+                        <input
+                            type="color"
+                            value={textColor}
+                            onChange={(e) => setTextColor(e.target.value)}
+                            style={{ flex: 1, height: '40px', border: 'none', borderRadius: '8px' }}
+                        />
+                    </div>
+                    <div className="range-row">
+                        <span className="range-label">写真サイズ</span>
+                        <input
+                            type="range" min="0.5" max="2.5" step="0.01"
+                            value={photoScale}
+                            onChange={(e) => setPhotoScale(parseFloat(e.target.value))}
+                            style={{ flex: 1 }}
+                        />
+                        <span className="range-label">{Math.round(photoScale * 100)}%</span>
+                    </div>
+                    <button
+                        className="btn-option"
+                        style={{ width: '100%', marginTop: '8px' }}
+                        onClick={() => document.getElementById('f').click()}
+                    >
+                        📷 写真を変更
+                    </button>
+                    <input
+                        id="f" type="file" hidden
+                        onChange={(e) => {
+                            const r = new FileReader();
+                            r.onload = (ev) => {
+                                setPreviewImage(ev.target.result);
+                                setPhotoPos({ x: 0, y: 0 });
+                                setPhotoScale(1.0);
+                            };
+                            r.readAsDataURL(e.target.files[0]);
+                        }}
+                        accept="image/*"
+                    />
+                </div>
+
+                <button className="btn-main" onClick={download}>
+                    💾 背景透過PNGを保存
+                </button>
+                <canvas ref={canvasRef} style={{ display: 'none' }} />
+            </div>
+        );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
