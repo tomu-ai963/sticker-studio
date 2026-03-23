@@ -260,7 +260,7 @@
         return d + ' Z';
     }
 
-    /* ── Canvas描画用クリップ関数（省略なし） ── */
+    /* ── Canvas描画用クリップ関数 ── */
     function drawHeartClip(ctx, cx, cy, size) {
         const s = size; const lx = cx - s * 0.27, rx = cx + s * 0.27; const ty = cy - s * 0.18;
         const r = s * 0.37; const bx = cx, by = cy + s * 0.52; const leftmost = lx - r;
@@ -368,7 +368,10 @@
                 <button className="btn-main" onClick={download}>💾 背景透過PNGを保存</button>
                 <button className="btn-guide" onClick={() => setShowGuide(true)}>🖨️ ステッカーを実際に作る方法</button>
                 {showGuide && (
-                    <div className="modal-overlay" onClick={() => setShowGuide(false)}><div className="modal-sheet" onClick={e => e.stopPropagation()}><div className="modal-handle" /><div className="modal-title">🖨️ ステッカーを実際に作ろう</div><div className="guide-section"><h3>① コンビニで印刷（セブンイレブン）</h3><ol className="guide-steps">{['保存したPNGを用意する', '「かんたんnetprint」をインストール', '画像を登録（ハガキサイズ推奨）', '予約番号をメモ', '店舗でネットプリントを選び印刷'].map((s, i) => (<li key={i}><span className="step-num">{i + 1}</span><span>{s}</span></li>))}</ol><div className="store-btns"><a className="store-btn store-btn-ios" href="https://apps.apple.com/jp/app/%E3%81%8B%E3%82%93%E3%81%9F%E3%82%93netprint/id1436423456" target="_blank" rel="noopener noreferrer">App Store</a><a className="store-btn store-btn-android" href="https://play.google.com/store/details?id=jp.co.fujifilm.fb.netprint.simple&hl=ja" target="_blank" rel="noopener noreferrer">Google Play</a></div></div><div className="guide-section"><h3>② 印刷屋さんで作成</h3><p style={{fontSize:'0.85rem', color:'#475569', lineHeight:'1.6'}}>ラクスルやグラフィックがおすすめ。5cm角程度ならこの1000pxデータで十分綺麗です。</p></div><button className="modal-close" onClick={() => setShowGuide(false)}>閉じる</button></div></div>
+                    <div className="modal-overlay" onClick={() => setShowGuide(false)}><div className="modal-sheet" onClick={e => e.stopPropagation()}><div className="modal-handle" /><div className="modal-title">🖨️ ステッカーを実際に作ろう</div><div className="guide-section"><h3>① コンビニで印刷（セブンイレブン）</h3><ol className="guide-steps">{['保存したPNGを用意する', '「かんたんnetprint」をインストール', '画像を登録（ハガキサイズ推奨）', '予約番号をメモ', '店舗でネットプリントを選び印刷'].map((s, i) => (<li key={i}><span className="step-num">{i + 1}</span><span>{s}</span></li>))}</ol><div className="store-btns">
+                    <a className="store-btn store-btn-ios" href="https://apps.apple.com/jp/app/%E3%81%8B%E3%82%93%E3%81%9F%E3%82%93netprint/id1436423456" target="_blank" rel="noopener noreferrer">App Store</a>
+                    <a className="store-btn store-btn-android" href="https://play.google.com/store/apps/details?id=jp.co.fujifilm.fb.netprint.simple&hl=ja" target="_blank" rel="noopener noreferrer">Google Play</a>
+                    </div></div><div className="guide-section"><h3>② 印刷屋さんで作成</h3><p style={{fontSize:'0.85rem', color:'#475569', lineHeight:'1.6'}}>ラクスルやグラフィックがおすすめ。5cm角程度ならこの1000pxデータで十分綺麗です。</p></div><button className="modal-close" onClick={() => setShowGuide(false)}>閉じる</button></div></div>
                 )}<canvas ref={canvasRef} style={{ display: 'none' }} />
             </div>
         );
