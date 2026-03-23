@@ -17,13 +17,14 @@
             --success: #10b981;
         }
         body { margin: 0; background: var(--background); font-family: sans-serif; color: var(--text); overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
-        .app-container { max-width: 480px; margin: 0 auto; padding: 20px; padding-bottom: 220px; }
+        .app-container { max-width: 480px; margin: 0 auto; padding: 20px; padding-bottom: 200px; }
         .app-header { text-align: center; margin-bottom: 15px; }
         .app-header h1 { font-size: 1.4rem; font-weight: 800; margin: 0; }
         .app-header span { font-size: 0.8rem; color: var(--primary); font-weight: 600; }
         .studio-container { position: relative; width: 300px; height: 300px; margin: 0 auto; background: var(--surface); border-radius: 16px; overflow: hidden; border: 4px solid #fff; box-shadow: 0 8px 25px rgba(0,0,0,0.1); touch-action: none; }
         .sticker-mask { position: absolute; top: 0; left: 0; width: 300px; height: 300px; z-index: 10; pointer-events: none; }
         .photo-layer { position: absolute; top: 0; left: 0; transform-origin: top left; z-index: 5; pointer-events: auto; cursor: grab; }
+        .photo-layer:active { cursor: grabbing; }
         .sticker-label { position: absolute; z-index: 20; font-weight: 900; text-shadow: 2px 2px 0 #000, -1px -1px 0 #000; padding: 5px 10px; white-space: nowrap; user-select: none; pointer-events: auto; cursor: move; border-radius: 4px; }
         .card { background: var(--surface); padding: 15px; border-radius: 18px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 15px; border: 1px solid var(--border); }
         .card-title { font-size: 0.8rem; font-weight: 800; color: #64748b; margin-bottom: 10px; display: block; text-transform: uppercase; }
@@ -37,8 +38,10 @@
         .range-label { font-size: 0.75rem; color: #64748b; white-space: nowrap; }
         .btn-main { position: fixed; bottom: 15px; left: 50%; transform: translateX(-50%); width: calc(100% - 30px); max-width: 450px; background: var(--success); color: #fff; font-size: 1.1rem; padding: 20px; border: none; border-radius: 16px; font-weight: 800; cursor: pointer; box-shadow: 0 10px 20px rgba(16,185,129,0.3); z-index: 100; }
         .btn-guide { position: fixed; bottom: 85px; left: 50%; transform: translateX(-50%); width: calc(100% - 30px); max-width: 450px; background: #fff; color: var(--primary); font-size: 0.95rem; padding: 14px; border: 2px solid var(--primary); border-radius: 16px; font-weight: 800; cursor: pointer; z-index: 100; }
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; display: flex; align-items: flex-end; }
-        .modal-sheet { background: #fff; width: 100%; max-height: 85vh; border-radius: 24px 24px 0 0; overflow-y: auto; padding: 24px 20px 40px; box-sizing: border-box; }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; display: flex; align-items: flex-end; animation: fadeIn 0.2s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .modal-sheet { background: #fff; width: 100%; max-height: 85vh; border-radius: 24px 24px 0 0; overflow-y: auto; padding: 24px 20px 40px; box-sizing: border-box; animation: slideUp 0.25s ease; }
+        @keyframes slideUp { from { transform: translateY(60px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         .modal-handle { width: 40px; height: 4px; background: #e2e8f0; border-radius: 2px; margin: 0 auto 20px; }
         .modal-title { font-size: 1.2rem; font-weight: 800; text-align: center; margin-bottom: 20px; color: var(--text); }
         .guide-section { margin-bottom: 24px; }
@@ -46,12 +49,16 @@
         .guide-steps { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
         .guide-steps li { display: flex; gap: 10px; align-items: flex-start; font-size: 0.85rem; line-height: 1.5; color: #475569; }
         .step-num { background: var(--primary); color: #fff; border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800; flex-shrink: 0; }
-        .modal-close { display: block; width: 100%; margin-top: 16px; padding: 14px; background: #f1f5f9; border: none; border-radius: 12px; font-weight: 800; font-size: 0.95rem; color: #64748b; cursor: pointer; }
-        /* プレミアム用スタイル */
-        .premium-card { border: 2px solid #ffd700; background: #fffdf0; margin-top: 20px; }
-        .premium-list { list-style: none; padding: 0; margin: 10px 0; font-size: 0.8rem; line-height: 1.8; }
+        .guide-note { background: #fefce8; border: 1px solid #fde68a; border-radius: 10px; padding: 12px; font-size: 0.8rem; color: #92400e; line-height: 1.5; }
+        .store-btns { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
+        .store-btn { display: block; text-align: center; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 0.85rem; text-decoration: none; }
+        .store-btn-ios { background: #000; color: #fff; }
+        .store-btn-android { background: #16a34a; color: #fff; }
+        .premium-card { border: 2px solid #ffd700; background: #fffdf0; }
+        .premium-list { list-style: none; padding: 0; margin: 10px 0; font-size: 0.82rem; line-height: 1.9; }
         .premium-list li { display: flex; align-items: center; gap: 8px; }
-        .legal-footer { font-size: 0.65rem; color: #64748b; text-align: center; padding: 20px; border-top: 1px solid #e2e8f0; margin-top: 40px; line-height: 1.6; }
+        .legal-footer { font-size: 0.65rem; color: #94a3b8; text-align: center; padding: 20px 10px; border-top: 1px solid var(--border); margin-top: 10px; line-height: 1.8; }
+        .modal-close { display: block; width: 100%; margin-top: 16px; padding: 14px; background: #f1f5f9; border: none; border-radius: 12px; font-weight: 800; font-size: 0.95rem; color: #64748b; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -60,11 +67,15 @@
     const { useState, useRef, useEffect } = React;
 
     function heartPath(cx, cy, size) {
-        const s = size; const lx = cx - s * 0.27, rx = cx + s * 0.27; const ty = cy - s * 0.18;
-        const r = s * 0.37; const bx = cx, by = cy + s * 0.52; const leftmost = lx - r;
-        const ltx = lx - r * 0.3, lty = ty + r * 0.95; const rtx = rx + r * 0.3, rty = ty + r * 0.95;
-        const rightmost = lx + (rx - lx) + r;
-        return [`M ${cx} ${ty}`, `C ${cx - s*0.07} ${ty - s*0.22}, ${leftmost} ${ty - s*0.38}, ${leftmost} ${ty}`, `C ${leftmost} ${ty + r*0.75}, ${ltx} ${lty}, ${bx} ${by}`, `C ${rtx} ${rty}, ${rightmost} ${ty + r*0.75}, ${rightmost} ${ty}`, `C ${rightmost} ${ty - s*0.38}, ${cx + s*0.07} ${ty - s*0.22}, ${cx} ${ty}`, 'Z'].join(' ');
+        const s = size;
+        const lx = cx - s * 0.27, rx = cx + s * 0.27;
+        const ty = cy - s * 0.18;
+        const r = s * 0.37;
+        const bx = cx, by = cy + s * 0.52;
+        const leftmost = lx - r;
+        const ltx = lx - r * 0.3, lty = ty + r * 0.95;
+        const rtx = rx + r * 0.3, rty = ty + r * 0.95;
+        return [`M ${cx} ${ty}`, `C ${cx - s*0.07} ${ty - s*0.22}, ${leftmost} ${ty - s*0.38}, ${leftmost} ${ty}`, `C ${leftmost} ${ty + r*0.75}, ${ltx} ${lty}, ${bx} ${by}`, `C ${rtx} ${rty}, ${lx + (rx - lx) + r} ${ty + r*0.75}, ${lx + (rx - lx) + r} ${ty}`, `C ${lx + (rx - lx) + r} ${ty - s*0.38}, ${cx + s*0.07} ${ty - s*0.22}, ${cx} ${ty}`, 'Z'].join(' ');
     }
 
     function roundedStarPath(cx, cy, outerR, innerR, points, cornerR) {
@@ -76,14 +87,14 @@
         }
         const n = verts.length; let d = '';
         for (let i = 0; i < n; i++) {
-            const prev = verts[(i - 1 + n) % n]; const curr = verts[i]; const next = verts[(i + 1) % n];
-            const r = curr.isOuter ? cornerR : cornerR * 0.5;
-            const dx1 = curr.x - prev.x, dy1 = curr.y - prev.y; const len1 = Math.hypot(dx1, dy1);
-            const dx2 = next.x - curr.x, dy2 = next.y - curr.y; const len2 = Math.hypot(dx2, dy2);
-            const t1 = Math.min(r / len1, 0.4); const t2 = Math.min(r / len2, 0.4);
-            const p1x = curr.x - dx1 * t1, p1y = curr.y - dy1 * t1; const p2x = curr.x + dx2 * t2, p2y = curr.y + dy2 * t2;
+            const p = verts[(i - 1 + n) % n]; const c = verts[i]; const nx = verts[(i + 1) % n];
+            const r = c.isOuter ? cornerR : cornerR * 0.5;
+            const dx1 = c.x - p.x, dy1 = c.y - p.y; const l1 = Math.hypot(dx1, dy1);
+            const dx2 = nx.x - c.x, dy2 = nx.y - c.y; const l2 = Math.hypot(dx2, dy2);
+            const t1 = Math.min(r / l1, 0.4); const t2 = Math.min(r / l2, 0.4);
+            const p1x = c.x - dx1 * t1, p1y = c.y - dy1 * t1; const p2x = c.x + dx2 * t2, p2y = c.y + dy2 * t2;
             if (i === 0) d += `M ${p1x} ${p1y}`; else d += ` L ${p1x} ${p1y}`;
-            d += ` Q ${curr.x} ${curr.y} ${p2x} ${p2y}`;
+            d += ` Q ${c.x} ${c.y} ${p2x} ${p2y}`;
         }
         return d + ' Z';
     }
@@ -126,7 +137,8 @@
         const [shape, setShape] = useState('circle');
         const [text, setText] = useState('文字を入力');
         const [textColor, setTextColor] = useState('#ffffff');
-        const [previewImage, setPreviewImage] = useState('data:image/svg+xml;base64,' + btoa('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300"><rect width="300" height="300" fill="#f8f8f8"/><g transform="translate(150,150)"><polygon points="0,-110 95.3,55 -95.3,55" fill="none" stroke="#bbbbbb" stroke-width="2"/><polygon points="0,110 95.3,-55 -95.3,-55" fill="none" stroke="#bbbbbb" stroke-width="2"/></g></svg>'));
+        const defaultStar6 = 'data:image/svg+xml;base64,' + btoa('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300"><rect width="300" height="300" fill="#f8f8f8"/><g transform="translate(150,150)"><polygon points="0,-110 95.3,55 -95.3,55" fill="none" stroke="#bbbbbb" stroke-width="2"/><polygon points="0,110 95.3,-55 -95.3,-55" fill="none" stroke="#bbbbbb" stroke-width="2"/></g></svg>');
+        const [previewImage, setPreviewImage] = useState(defaultStar6);
         const [photoPos, setPhotoPos] = useState({ x: 0, y: 0 });
         const [photoScale, setPhotoScale] = useState(1.0);
         const [textPos, setTextPos] = useState({ x: 90, y: 180 });
@@ -135,7 +147,10 @@
         const labelRef = useRef(null);
         const canvasRef = useRef(null);
 
-        const handleStart = (t, e) => { const p = e.touches ? e.touches[0] : e; drag.current = { target: t, last: { x: p.clientX, y: p.clientY } }; };
+        const handleStart = (target, e) => {
+            const point = e.touches ? e.touches[0] : e;
+            drag.current = { target, last: { x: point.clientX, y: point.clientY } };
+        };
 
         useEffect(() => {
             const move = (e) => {
@@ -176,7 +191,8 @@
             };
         };
 
-        const sP = roundedStarPath(150, 150, 140, 65, 5, 18); const hP = heartPath(150, 162, 178);
+        const starPath = roundedStarPath(150, 150, 140, 65, 5, 18);
+        const hPath = heartPath(150, 162, 178);
 
         return (
             <div className="app-container">
@@ -184,42 +200,39 @@
                 <div className="card" style={{ textAlign: 'center' }}>
                     <div className="studio-container">
                         <img src={previewImage} className="photo-layer" style={{ transform: `translate(${photoPos.x}px, ${photoPos.y}px) scale(${photoScale})` }} onMouseDown={e => handleStart('photo', e)} onTouchStart={e => handleStart('photo', e)} draggable={false} />
-                        <svg className="sticker-mask" viewBox="0 0 300 300"><defs><mask id="m"><rect width="300" height="300" fill="white" />{shape === 'circle' && <circle cx="150" cy="150" r="143" fill="black" />}{shape === 'square' && <rect x="8" y="8" width="284" height="284" rx="36" fill="black" />}{shape === 'star' && <path d={sP} fill="black" />}{shape === 'heart' && <path d={hP} fill="black" />}</mask></defs><rect width="300" height="300" fill="#f1f5f9" mask="url(#m)" />{shape === 'circle' && <circle cx="150" cy="150" r="143" fill="none" stroke="white" strokeWidth="6" />}{shape === 'square' && <rect x="8" y="8" width="284" height="284" rx="36" fill="none" stroke="white" strokeWidth="6" />}{shape === 'star' && <path d={sP} fill="none" stroke="white" strokeWidth="5" />}{shape === 'heart' && <path d={hP} fill="none" stroke="white" strokeWidth="5" />}</svg>
+                        <svg className="sticker-mask" viewBox="0 0 300 300"><defs><mask id="m"><rect width="300" height="300" fill="white" />{shape === 'circle' && <circle cx="150" cy="150" r="143" fill="black" />}{shape === 'square' && <rect x="8" y="8" width="284" height="284" rx="36" fill="black" />}{shape === 'star' && <path d={starPath} fill="black" />}{shape === 'heart' && <path d={hPath} fill="black" />}</mask></defs><rect width="300" height="300" fill="#f1f5f9" mask="url(#m)" />{shape === 'circle' && <circle cx="150" cy="150" r="143" fill="none" stroke="white" strokeWidth="6" />}{shape === 'square' && <rect x="8" y="8" width="284" height="284" rx="36" fill="none" stroke="white" strokeWidth="6" />}{shape === 'star' && <path d={starPath} fill="none" stroke="white" strokeWidth="5" />}{shape === 'heart' && <path d={hPath} fill="none" stroke="white" strokeWidth="5" />}</svg>
                         <div ref={labelRef} className="sticker-label" style={{ color: textColor, left: textPos.x, top: textPos.y, fontSize: '24px' }} onMouseDown={e => { e.stopPropagation(); handleStart('text', e); }} onTouchStart={e => { e.stopPropagation(); handleStart('text', e); }}>{text}</div>
                     </div>
                 </div>
-                <div className="card"><span className="card-title">1. 形を選ぶ</span><div className="control-grid">{['circle', 'square', 'star', 'heart'].map(s => (<button key={s} className={`btn-option ${shape === s ? 'active' : ''}`} onClick={() => { setShape(s); if (s === 'heart') setPhotoScale(v => Math.max(v, 1.3)); }}>{s === 'circle' ? '🔵 丸' : s === 'square' ? '🟦 四角' : s === 'star' ? '⭐ 星' : '❤️ ハート'}</button>))}</div></div>
-                <div className="card"><span className="card-title">2. カスタマイズ</span><input type="text" value={text} onChange={e => setText(e.target.value)} placeholder="名前" maxLength={15} /><div className="range-row"><span className="range-label">文字色</span><input type="color" value={textColor} onChange={e => setTextColor(e.target.value)} style={{ flex: 1, height: '40px', border: 'none', borderRadius: '8px' }} /></div><div className="range-row"><span className="range-label">写真サイズ</span><input type="range" min="0.5" max="2.5" step="0.01" value={photoScale} onChange={e => setPhotoScale(parseFloat(e.target.value))} style={{ flex: 1 }} /><span className="range-label">{Math.round(photoScale * 100)}%</span></div><button className="btn-option" style={{ width: '100%', marginTop: '8px' }} onClick={() => document.getElementById('f').click()}>📷 写真を変更</button><input id="f" type="file" hidden onChange={e => { const r = new FileReader(); r.onload = ev => { setPreviewImage(ev.target.result); setPhotoPos({ x: 0, y: 0 }); setPhotoScale(1.0); }; r.readAsDataURL(e.target.files[0]); }} accept="image/*" /></div>
-
-                {/* --- プレミアムプラン詳細案内 --- */}
-                <div className="card premium-card">
-                    <span className="card-title" style={{ color: '#b8860b' }}>💎 プレミアムプラン（買い切り）</span>
-                    <p style={{ fontSize: '0.85rem', fontWeight: 'bold', margin: '5px 0' }}>価格：500円（税込）</p>
-                    <ul className="premium-list">
-                        <li>✅ 🖨️ <b>超高画質保存</b>：3000px超のデータで印刷が綺麗</li>
-                        <li>✅ ✨ <b>限定デザイン</b>：特別なフレームやフォントが解放</li>
-                        <li>✅ 🚫 <b>ロゴ非表示</b>：クレジットなしで自由に使える</li>
-                        <li>✅ 🎁 <b>一度の支払いでずっと</b>：追加料金なしの買い切り制</li>
-                    </ul>
-                    <button className="btn-option" style={{ width: '100%', marginTop: '10px', background: '#ffd700', color: '#000', borderColor: '#b8860b', fontWeight: '800' }} onClick={() => alert('現在Stripeの審査中です。承認され次第、こちらから決済が可能になります。')}>
-                        プレミアムにアップグレード
-                    </button>
-                </div>
+                <div className="card"><span className="card-title">1. 形を選ぶ</span><div className="control-grid">{['circle', 'square', 'star', 'heart'].map(s => (<button key={s} className={`btn-option ${shape === s ? 'active' : ''}`} onClick={() => { setShape(s); if (s === 'heart') setPhotoScale(p => Math.max(p, 1.3)); }}>{s === 'circle' ? '🔵 丸' : s === 'square' ? '🟦 四角' : s === 'star' ? '⭐ 星' : '❤️ ハート'}</button>))}</div></div>
+                <div className="card"><span className="card-title">2. カスタマイズ</span><input type="text" value={text} onChange={e => setText(e.target.value)} placeholder="名前を入力" maxLength={15} /><div className="range-row"><span className="range-label">文字色</span><input type="color" value={textColor} onChange={e => setTextColor(e.target.value)} style={{ flex: 1, height: '40px', border: 'none', borderRadius: '8px' }} /></div><div className="range-row"><span className="range-label">写真サイズ</span><input type="range" min="0.5" max="2.5" step="0.01" value={photoScale} onChange={e => setPhotoScale(parseFloat(e.target.value))} style={{ flex: 1 }} /><span className="range-label">{Math.round(photoScale * 100)}%</span></div><button className="btn-option" style={{ width: '100%', marginTop: '8px' }} onClick={() => document.getElementById('f').click()}>📷 写真を変更</button><input id="f" type="file" hidden onChange={e => { const r = new FileReader(); r.onload = ev => { setPreviewImage(ev.target.result); setPhotoPos({ x: 0, y: 0 }); setPhotoScale(1.0); }; r.readAsDataURL(e.target.files[0]); }} accept="image/*" /></div>
 
                 <button className="btn-main" onClick={download}>💾 背景透過PNGを保存</button>
                 <button className="btn-guide" onClick={() => setShowGuide(true)}>🖨️ ステッカーを実際に作る方法</button>
 
-                {/* --- 特定商取引法に基づく表記 --- */}
+                {showGuide && (
+                    <div className="modal-overlay" onClick={() => setShowGuide(false)}><div className="modal-sheet" onClick={e => e.stopPropagation()}><div className="modal-handle" /><div className="modal-title">🖨️ ステッカーを実際に作ろう</div><div className="guide-section"><h3>① コンビニで印刷（セブンイレブン）</h3><ol className="guide-steps">{['保存したPNGをスマホに用意', '「かんたんnetprint」をインストール', '画像を登録（ハガキサイズ推奨）', '予約番号をメモ', '店舗で印刷'].map((s, i) => (<li key={i}><span className="step-num">{i + 1}</span><span>{s}</span></li>))}</ol><div className="store-btns"><a className="store-btn store-btn-ios" href="https://apps.apple.com/jp/app/id1436423456" target="_blank" rel="noopener noreferrer">🍎 App Store</a><a className="store-btn store-btn-android" href="https://play.google.com/store/search?q=%E3%81%8B%E3%82%93%E3%81%9F%E3%82%93netprint" target="_blank" rel="noopener noreferrer">🤖 Google Play</a></div></div><div className="guide-section"><h3>② 印刷屋さんで作成</h3><p style={{fontSize:'0.85rem', color:'#475569', lineHeight:'1.6'}}>ラクスルやグラフィックがおすすめ。5cm角程度なら綺麗に仕上がります。</p></div><button className="modal-close" onClick={() => setShowGuide(false)}>閉じる</button></div></div>
+                )}<canvas ref={canvasRef} style={{ display: 'none' }} />
+
+                <div className="card premium-card">
+                    <span className="card-title" style={{ color: '#b8860b' }}>💎 プレミアムプラン（買い切り）</span>
+                    <p style={{ fontSize: '0.9rem', fontWeight: 800, margin: '4px 0 8px' }}>500円（税込）・追加料金なし</p>
+                    <ul className="premium-list">
+                        <li>✅ <b>超高画質保存</b>：3000px超で印刷がより綺麗に</li>
+                        <li>✅ <b>ロゴ非表示</b>：クレジットなしで使える</li>
+                        <li>✅ <b>限定フレーム</b>：特別なデザインが解放</li>
+                        <li>✅ <b>買い切り</b>：一度の支払いでずっと使える</li>
+                    </ul>
+                    <button className="btn-option" style={{ width: '100%', marginTop: '10px', background: '#ffd700', color: '#1a1a1a', borderColor: '#b8860b', fontWeight: 800 }} onClick={() => alert('現在Stripe審査中です。承認され次第、こちらから決済が可能になります。')}>💳 プレミアムにアップグレード</button>
+                </div>
+
                 <footer className="legal-footer">
                     <p><strong>特定商取引法に基づく表記</strong></p>
-                    <p>運営者：とむ / 連絡先：Inverted.triangle.leef@gmail.com</p>
-                    <p>支払い方法：クレジットカード（Stripe） / 商品の引き渡し：決済完了後、即時デジタル機能解放</p>
-                    <p>返品・キャンセル：デジタルコンテンツの性質上、返金は受け付けておりません。</p>
+                    <p>運営者：とむ | 連絡先：Inverted.triangle.leef@gmail.com</p>
+                    <p>価格：500円（税込）| 支払：クレジットカード（Stripe）</p>
+                    <p>引渡：決済完了後、即時デジタル機能解放</p>
+                    <p>返品：商品の性質上、返金は承っておりません</p>
                 </footer>
-
-                {showGuide && (
-                    <div className="modal-overlay" onClick={() => setShowGuide(false)}><div className="modal-sheet" onClick={e => e.stopPropagation()}><div className="modal-handle" /><div className="modal-title">🖨️ ステッカーを実際に作ろう</div><div className="guide-section"><h3>① コンビニで印刷（セブンイレブン）</h3><ol className="guide-steps">{['保存したPNGを用意する', '「かんたんnetprint」をインストール', '画像を登録（ハガキサイズ推奨）', '予約番号をメモ', '店舗でネットプリントを選び印刷'].map((s, i) => (<li key={i}><span className="step-num">{i + 1}</span><span>{s}</span></li>))}</ol></div><div className="guide-section"><h3>② 印刷屋さんで作成</h3><p style={{fontSize:'0.85rem', color:'#475569', lineHeight:'1.6'}}>ラクスルやグラフィックがおすすめ。5cm角程度ならこの1000pxデータで十分綺麗です。</p></div><button className="modal-close" onClick={() => setShowGuide(false)}>閉じる</button></div></div>
-                )}<canvas ref={canvasRef} style={{ display: 'none' }} />
             </div>
         );
     }
