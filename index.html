@@ -214,22 +214,42 @@
 <script type="text/babel">
     const { useState, useRef, useEffect } = React;
 
-    /* ── ハートパス生成 ── */
+    /* ── ハートパス生成（丸みたっぷり・面積広め） ── */
+    // 左右の円をベースにした正統派ハート
+    // cx,cy = 中心, size = 半径に相当するスケール
     function heartPath(cx, cy, size) {
         const s = size;
+        // 上部の左右の丸の中心
         const lx = cx - s * 0.27, rx = cx + s * 0.27;
         const ty = cy - s * 0.18;
+        // 円の半径
         const r = s * 0.37;
+        // 底点
         const bx = cx, by = cy + s * 0.52;
+        // 左円の接線開始点（左円の一番左）
         const leftmost = lx - r;
+        // 左円の下側接線点
         const ltx = lx - r * 0.3, lty = ty + r * 0.95;
+        // 右円の下側接線点
         const rtx = rx + r * 0.3, rty = ty + r * 0.95;
-        const rightmost = lx + (rx - lx) + r;
-        return [`M ${cx} ${ty}`, `C ${cx - s*0.07} ${ty - s*0.22}, ${leftmost} ${ty - s*0.38}, ${leftmost} ${ty}`, `C ${leftmost} ${ty + r*0.75}, ${ltx} ${lty}, ${bx} ${by}`, `C ${rtx} ${rty}, ${rightmost} ${ty + r*0.75}, ${rightmost} ${ty}`, `C ${rightmost} ${ty - s*0.38}, ${cx + s*0.07} ${ty - s*0.22}, ${cx} ${ty}`, 'Z'].join(' ');
+
+        return [
+            `M ${cx} ${ty}`,
+            // 左へ → 左円の上を回り込む
+            `C ${cx - s*0.07} ${ty - s*0.22}, ${leftmost} ${ty - s*0.38}, ${leftmost} ${ty}`,
+            // 左円の下半分
+            `C ${leftmost} ${ty + r*0.75}, ${ltx} ${lty}, ${bx} ${by}`,
+            // 右円の下半分（対称）
+            `C ${rtx} ${rty}, ${lx + (rx - lx) + r} ${ty + r*0.75}, ${lx + (rx - lx) + r} ${ty}`,
+            // 右円の上を回り込んで中央へ
+            `C ${lx + (rx - lx) + r} ${ty - s*0.38}, ${cx + s*0.07} ${ty - s*0.22}, ${cx} ${ty}`,
+            'Z'
+        ].join(' ');
     }
 
-    /* ── 丸みのある星形パス ── */
+    /* ── 丸みのある星形パス（外半径・内半径・コーナー半径） ── */
     function roundedStarPath(cx, cy, outerR, innerR, points, cornerR) {
+        // 各頂点の座標を計算し、arc でコーナーを丸める
         const PI2 = Math.PI * 2;
         const step = PI2 / points;
         const halfStep = step / 2;
@@ -240,6 +260,7 @@
             verts.push({ x: cx + outerR * Math.cos(outerAngle), y: cy + outerR * Math.sin(outerAngle), isOuter: true });
             verts.push({ x: cx + innerR * Math.cos(innerAngle), y: cy + innerR * Math.sin(innerAngle), isOuter: false });
         }
+        // シンプルに各頂点をbezierでなだらかに繋ぐ
         const n = verts.length;
         let d = '';
         for (let i = 0; i < n; i++) {
@@ -255,130 +276,376 @@
             const t2 = Math.min(r / len2, 0.4);
             const p1x = curr.x - dx1 * t1, p1y = curr.y - dy1 * t1;
             const p2x = curr.x + dx2 * t2, p2y = curr.y + dy2 * t2;
-            if (i === 0) d += `M ${p1x} ${p1y}`; else d += ` L ${p1x} ${p1y}`;
+            if (i === 0) d += `M ${p1x} ${p1y}`;
+            else d += ` L ${p1x} ${p1y}`;
             d += ` Q ${curr.x} ${curr.y} ${p2x} ${p2y}`;
         }
         return d + ' Z';
     }
 
-    /* ── Canvas描画用クリップ関数 ── */
+    /* ── Canvas描画用 ハートのクリップパス（SVGと同じ形） ── */
     function drawHeartClip(ctx, cx, cy, size) {
-        const s = size; const lx = cx - s * 0.27, rx = cx + s * 0.27; const ty = cy - s * 0.18;
-        const r = s * 0.37; const bx = cx, by = cy + s * 0.52; const leftmost = lx - r;
-        const ltx = lx - r * 0.3, lty = ty + r * 0.95; const rtx = rx + r * 0.3, rty = ty + r * 0.95;
+        const s = size;
+        const lx = cx - s * 0.27, rx = cx + s * 0.27;
+        const ty = cy - s * 0.18;
+        const r = s * 0.37;
+        const bx = cx, by = cy + s * 0.52;
+        const leftmost = lx - r;
+        const ltx = lx - r * 0.3, lty = ty + r * 0.95;
+        const rtx = rx + r * 0.3, rty = ty + r * 0.95;
         const rightmost = lx + (rx - lx) + r;
-        ctx.beginPath(); ctx.moveTo(cx, ty);
+
+        ctx.beginPath();
+        ctx.moveTo(cx, ty);
         ctx.bezierCurveTo(cx - s*0.07, ty - s*0.22, leftmost, ty - s*0.38, leftmost, ty);
         ctx.bezierCurveTo(leftmost, ty + r*0.75, ltx, lty, bx, by);
         ctx.bezierCurveTo(rtx, rty, rightmost, ty + r*0.75, rightmost, ty);
         ctx.bezierCurveTo(rightmost, ty - s*0.38, cx + s*0.07, ty - s*0.22, cx, ty);
-        ctx.closePath(); ctx.clip();
+        ctx.closePath();
+        ctx.clip();
     }
 
+    /* ── Canvas描画用 丸み星のクリップパス ── */
     function drawRoundedStarClip(ctx, cx, cy, outerR, innerR, points, cornerR) {
-        const PI2 = Math.PI * 2; const step = PI2 / points; const halfStep = step / 2;
+        const PI2 = Math.PI * 2;
+        const step = PI2 / points;
+        const halfStep = step / 2;
         const verts = [];
         for (let i = 0; i < points; i++) {
-            const oa = i * step - Math.PI / 2; const ia = oa + halfStep;
-            verts.push({ x: cx + outerR * Math.cos(oa), y: cy + outerR * Math.sin(oa), isOuter: true });
-            verts.push({ x: cx + innerR * Math.cos(ia), y: cy + innerR * Math.sin(ia), isOuter: false });
+            const outerAngle = i * step - Math.PI / 2;
+            const innerAngle = outerAngle + halfStep;
+            verts.push({ x: cx + outerR * Math.cos(outerAngle), y: cy + outerR * Math.sin(outerAngle), isOuter: true });
+            verts.push({ x: cx + innerR * Math.cos(innerAngle), y: cy + innerR * Math.sin(innerAngle), isOuter: false });
         }
-        const n = verts.length; ctx.beginPath();
+        const n = verts.length;
+        ctx.beginPath();
         for (let i = 0; i < n; i++) {
-            const p = verts[(i - 1 + n) % n]; const c = verts[i]; const nx = verts[(i + 1) % n];
-            const r = c.isOuter ? cornerR : cornerR * 0.5;
-            const dx1 = c.x - p.x, dy1 = c.y - p.y; const l1 = Math.hypot(dx1, dy1);
-            const dx2 = nx.x - c.x, dy2 = nx.y - c.y; const l2 = Math.hypot(dx2, dy2);
-            const t1 = Math.min(r / l1, 0.4); const t2 = Math.min(r / l2, 0.4);
-            const p1x = c.x - dx1 * t1, p1y = c.y - dy1 * t1; const p2x = c.x + dx2 * t2, p2y = c.y + dy2 * t2;
-            if (i === 0) ctx.moveTo(p1x, p1y); else ctx.lineTo(p1x, p1y);
-            ctx.quadraticCurveTo(c.x, c.y, p2x, p2y);
+            const prev = verts[(i - 1 + n) % n];
+            const curr = verts[i];
+            const next = verts[(i + 1) % n];
+            const r = curr.isOuter ? cornerR : cornerR * 0.5;
+            const dx1 = curr.x - prev.x, dy1 = curr.y - prev.y;
+            const len1 = Math.hypot(dx1, dy1);
+            const dx2 = next.x - curr.x, dy2 = next.y - curr.y;
+            const len2 = Math.hypot(dx2, dy2);
+            const t1 = Math.min(r / len1, 0.4);
+            const t2 = Math.min(r / len2, 0.4);
+            const p1x = curr.x - dx1 * t1, p1y = curr.y - dy1 * t1;
+            const p2x = curr.x + dx2 * t2, p2y = curr.y + dy2 * t2;
+            if (i === 0) ctx.moveTo(p1x, p1y);
+            else ctx.lineTo(p1x, p1y);
+            ctx.quadraticCurveTo(curr.x, curr.y, p2x, p2y);
         }
-        ctx.closePath(); ctx.clip();
+        ctx.closePath();
+        ctx.clip();
     }
 
     function App() {
         const [shape, setShape] = useState('circle');
         const [text, setText] = useState('文字を入力');
         const [textColor, setTextColor] = useState('#ffffff');
-        const [previewImage, setPreviewImage] = useState('data:image/svg+xml;base64,' + btoa('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300"><rect width="300" height="300" fill="#f8f8f8"/><g transform="translate(150,150)"><polygon points="0,-110 95.3,55 -95.3,55" fill="none" stroke="#bbbbbb" stroke-width="2"/><polygon points="0,110 95.3,-55 -95.3,-55" fill="none" stroke="#bbbbbb" stroke-width="2"/></g></svg>'));
+        // 六芒星SVGをBase64化してデフォルト画像に使用
+        const defaultStar6 = 'data:image/svg+xml;base64,' + btoa(`
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
+                <rect width="300" height="300" fill="#f8f8f8"/>
+                <g transform="translate(150,150)">
+                    <polygon points="0,-110 95.3,55 -95.3,55"
+                        fill="none" stroke="#bbbbbb" stroke-width="2"/>
+                    <polygon points="0,110 95.3,-55 -95.3,-55"
+                        fill="none" stroke="#bbbbbb" stroke-width="2"/>
+                </g>
+            </svg>
+        `);
+        const [previewImage, setPreviewImage] = useState(defaultStar6);
         const [photoPos, setPhotoPos] = useState({ x: 0, y: 0 });
         const [photoScale, setPhotoScale] = useState(1.0);
         const [textPos, setTextPos] = useState({ x: 90, y: 180 });
         const [showGuide, setShowGuide] = useState(false);
-        const drag = useRef({ target: null, last: { x: 0, y: 0 } });
         const labelRef = useRef(null);
         const canvasRef = useRef(null);
 
-        const handleStart = (t, e) => { const p = e.touches ? e.touches[0] : e; drag.current = { target: t, last: { x: p.clientX, y: p.clientY } }; };
+        const handleStart = (target, e) => {
+            const point = e.touches ? e.touches[0] : e;
+            drag.current = { target, last: { x: point.clientX, y: point.clientY } };
+        };
 
         useEffect(() => {
-            const move = (e) => {
-                if (!drag.current.target) return; if (e.cancelable) e.preventDefault();
-                const p = e.touches ? e.touches[0] : e;
-                const dx = p.clientX - drag.current.last.x; const dy = p.clientY - drag.current.last.y;
-                if (drag.current.target === 'photo') setPhotoPos(v => ({ x: v.x + dx, y: v.y + dy }));
-                else if (drag.current.target === 'text') setTextPos(v => ({ x: v.x + dx, y: v.y + dy }));
-                drag.current.last = { x: p.clientX, y: p.clientY };
+            const handleMove = (e) => {
+                if (!drag.current.target) return;
+                if (e.cancelable) e.preventDefault();
+                const point = e.touches ? e.touches[0] : e;
+                const dx = point.clientX - drag.current.last.x;
+                const dy = point.clientY - drag.current.last.y;
+                if (drag.current.target === 'photo') {
+                    setPhotoPos(p => ({ x: p.x + dx, y: p.y + dy }));
+                } else if (drag.current.target === 'text') {
+                    setTextPos(p => ({ x: p.x + dx, y: p.y + dy }));
+                }
+                drag.current.last = { x: point.clientX, y: point.clientY };
             };
-            const end = () => { drag.current.target = null; };
-            window.addEventListener('mousemove', move); window.addEventListener('mouseup', end);
-            window.addEventListener('touchmove', move, { passive: false }); window.addEventListener('touchend', end);
-            return () => { window.removeEventListener('mousemove', move); window.removeEventListener('mouseup', end); window.removeEventListener('touchmove', move); window.removeEventListener('touchend', end); };
+            const handleEnd = () => { drag.current.target = null; };
+            window.addEventListener('mousemove', handleMove);
+            window.addEventListener('mouseup', handleEnd);
+            window.addEventListener('touchmove', handleMove, { passive: false });
+            window.addEventListener('touchend', handleEnd);
+            return () => {
+                window.removeEventListener('mousemove', handleMove);
+                window.removeEventListener('mouseup', handleEnd);
+                window.removeEventListener('touchmove', handleMove);
+                window.removeEventListener('touchend', handleEnd);
+            };
         }, []);
 
         const download = () => {
-            const cvs = canvasRef.current; const ctx = cvs.getContext('2d');
-            cvs.width = 1000; cvs.height = 1000; ctx.clearRect(0, 0, 1000, 1000);
-            const s = 1000 / 300; ctx.save();
-            if (shape === 'circle') { ctx.beginPath(); ctx.arc(500, 500, 485, 0, Math.PI * 2); ctx.clip(); }
-            else if (shape === 'square') { ctx.beginPath(); ctx.roundRect(30, 30, 940, 940, 100); ctx.clip(); }
-            else if (shape === 'star') drawRoundedStarClip(ctx, 500, 500, 490, 230, 5, 60);
-            else if (shape === 'heart') drawHeartClip(ctx, 500, 500, 595);
+            const canvas = canvasRef.current;
+            const ctx = canvas.getContext('2d');
+            canvas.width = 1000;
+            canvas.height = 1000;
+            ctx.clearRect(0, 0, 1000, 1000);
 
-            const img = new Image(); img.crossOrigin = "anonymous"; img.src = previewImage;
+            const scale = 1000 / 300;
+            const cx = 500, cy = 500;
+
+            ctx.save();
+            // クリップ形状（1000x1000座標系）
+            if (shape === 'circle') {
+                ctx.beginPath(); ctx.arc(cx, cy, 485, 0, Math.PI * 2); ctx.clip();
+            } else if (shape === 'square') {
+                ctx.beginPath(); ctx.roundRect(30, 30, 940, 940, 100); ctx.clip();
+            } else if (shape === 'star') {
+                drawRoundedStarClip(ctx, cx, cy, 490, 230, 5, 60);
+            } else if (shape === 'heart') {
+                drawHeartClip(ctx, cx, cy, 595);
+            }
+
+            // 写真を描画
+            const img = new Image();
+            img.crossOrigin = "anonymous";
+            img.src = previewImage;
             img.onload = () => {
-                const asp = img.width / img.height; const bw = asp >= 1 ? 300 : 300 * asp; const bh = asp >= 1 ? 300 / asp : 300;
-                ctx.drawImage(img, photoPos.x * s, photoPos.y * s, bw * photoScale * s, bh * photoScale * s);
+                // アスペクト比を保ってキャンバスを埋める
+                const aspect = img.width / img.height;
+                const baseW = aspect >= 1 ? 300 : 300 * aspect;
+                const baseH = aspect >= 1 ? 300 / aspect : 300;
+
+                ctx.drawImage(
+                    img,
+                    photoPos.x * scale,
+                    photoPos.y * scale,
+                    baseW * photoScale * scale,
+                    baseH * photoScale * scale
+                );
                 ctx.restore();
+
+                // テキスト描画
                 if (labelRef.current) {
-                    const tx = (textPos.x + labelRef.current.offsetWidth / 2) * s; const ty = (textPos.y + labelRef.current.offsetHeight / 2) * s;
-                    ctx.font = "900 85px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-                    ctx.strokeStyle = "#000"; ctx.lineWidth = 15; ctx.strokeText(text.toUpperCase(), tx, ty);
-                    ctx.fillStyle = textColor; ctx.fillText(text.toUpperCase(), tx, ty);
+                    const tx = (textPos.x + labelRef.current.offsetWidth / 2) * scale;
+                    const ty = (textPos.y + labelRef.current.offsetHeight / 2) * scale;
+                    ctx.font = "900 85px sans-serif";
+                    ctx.textAlign = "center";
+                    ctx.textBaseline = "middle";
+                    ctx.strokeStyle = "#000";
+                    ctx.lineWidth = 15;
+                    ctx.strokeText(text.toUpperCase(), tx, ty);
+                    ctx.fillStyle = textColor;
+                    ctx.fillText(text.toUpperCase(), tx, ty);
                 }
-                ctx.font = "500 24px sans-serif"; ctx.fillStyle = "rgba(0,0,0,0.3)"; ctx.textAlign = "center"; ctx.fillText("Powered by Sticker Studio Free", 500, 960);
-                const l = document.createElement('a'); l.download = `sticker_${shape}.png`; l.href = cvs.toDataURL("image/png"); l.click();
+
+                // クレジット
+                ctx.font = "500 24px sans-serif";
+                ctx.fillStyle = "rgba(0,0,0,0.3)";
+                ctx.textAlign = "center";
+                ctx.fillText("Powered by Sticker Studio Free", 500, 960);
+
+                const link = document.createElement('a');
+                link.download = `sticker_${shape}.png`;
+                link.href = canvas.toDataURL("image/png");
+                link.click();
             };
         };
 
-        const sP = roundedStarPath(150, 150, 140, 65, 5, 18); const hP = heartPath(150, 162, 178);
+        // SVGプレビュー用の形状
+        const starPath = roundedStarPath(150, 150, 140, 65, 5, 18);
+        const hPath = heartPath(150, 162, 178);
 
         return (
             <div className="app-container">
-                <div className="app-header"><h1>Sticker Studio</h1><span>Free Edition</span></div>
+                <div className="app-header">
+                    <h1>Sticker Studio</h1>
+                    <span>Free Edition</span>
+                </div>
+
                 <div className="card" style={{ textAlign: 'center' }}>
                     <div className="studio-container">
-                        <img src={previewImage} className="photo-layer" style={{ transform: `translate(${photoPos.x}px, ${photoPos.y}px) scale(${photoScale})` }} onMouseDown={e => handleStart('photo', e)} onTouchStart={e => handleStart('photo', e)} draggable={false} />
-                        <svg className="sticker-mask" viewBox="0 0 300 300"><defs><mask id="m"><rect width="300" height="300" fill="white" />{shape === 'circle' && <circle cx="150" cy="150" r="143" fill="black" />}{shape === 'square' && <rect x="8" y="8" width="284" height="284" rx="36" fill="black" />}{shape === 'star' && <path d={sP} fill="black" />}{shape === 'heart' && <path d={hP} fill="black" />}</mask></defs><rect width="300" height="300" fill="#f1f5f9" mask="url(#m)" />{shape === 'circle' && <circle cx="150" cy="150" r="143" fill="none" stroke="white" strokeWidth="6" />}{shape === 'square' && <rect x="8" y="8" width="284" height="284" rx="36" fill="none" stroke="white" strokeWidth="6" />}{shape === 'star' && <path d={sP} fill="none" stroke="white" strokeWidth="5" />}{shape === 'heart' && <path d={hP} fill="none" stroke="white" strokeWidth="5" />}</svg>
-                        <div ref={labelRef} className="sticker-label" style={{ color: textColor, left: textPos.x, top: textPos.y, fontSize: '24px' }} onMouseDown={e => { e.stopPropagation(); handleStart('text', e); }} onTouchStart={e => { e.stopPropagation(); handleStart('text', e); }}>{text}</div>
+                        <img
+                            src={previewImage}
+                            className="photo-layer"
+                            style={{ transform: `translate(${photoPos.x}px, ${photoPos.y}px) scale(${photoScale})` }}
+                            onMouseDown={(e) => handleStart('photo', e)}
+                            onTouchStart={(e) => handleStart('photo', e)}
+                            draggable={false}
+                        />
+                        <svg className="sticker-mask" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <mask id="m">
+                                    <rect width="300" height="300" fill="white" />
+                                    {shape === 'circle' && <circle cx="150" cy="150" r="143" fill="black" />}
+                                    {shape === 'square' && <rect x="8" y="8" width="284" height="284" rx="36" fill="black" />}
+                                    {shape === 'star' && <path d={starPath} fill="black" />}
+                                    {shape === 'heart' && <path d={hPath} fill="black" />}
+                                </mask>
+                            </defs>
+                            <rect width="300" height="300" fill="#f1f5f9" mask="url(#m)" />
+                            {shape === 'circle' && <circle cx="150" cy="150" r="143" fill="none" stroke="white" strokeWidth="6" />}
+                            {shape === 'square' && <rect x="8" y="8" width="284" height="284" rx="36" fill="none" stroke="white" strokeWidth="6" />}
+                            {shape === 'star' && <path d={starPath} fill="none" stroke="white" strokeWidth="5" />}
+                            {shape === 'heart' && <path d={hPath} fill="none" stroke="white" strokeWidth="5" />}
+                        </svg>
+                        <div
+                            ref={labelRef}
+                            className="sticker-label"
+                            style={{ color: textColor, left: textPos.x, top: textPos.y, fontSize: '24px' }}
+                            onMouseDown={(e) => { e.stopPropagation(); handleStart('text', e); }}
+                            onTouchStart={(e) => { e.stopPropagation(); handleStart('text', e); }}
+                        >
+                            {text}
+                        </div>
                     </div>
                 </div>
-                <div className="card"><span className="card-title">1. 形を選ぶ</span><div className="control-grid">{['circle', 'square', 'star', 'heart'].map(s => (<button key={s} className={`btn-option ${shape === s ? 'active' : ''}`} onClick={() => { setShape(s); if (s === 'heart') setPhotoScale(v => Math.max(v, 1.3)); }}>{s === 'circle' ? '🔵 丸' : s === 'square' ? '🟦 四角' : s === 'star' ? '⭐ 星' : '❤️ ハート'}</button>))}</div></div>
-                <div className="card"><span className="card-title">2. カスタマイズ</span><input type="text" value={text} onChange={e => setText(e.target.value)} placeholder="名前" maxLength={15} /><div className="range-row"><span className="range-label">文字色</span><input type="color" value={textColor} onChange={e => setTextColor(e.target.value)} style={{ flex: 1, height: '40px', border: 'none', borderRadius: '8px' }} /></div><div className="range-row"><span className="range-label">写真サイズ</span><input type="range" min="0.5" max="2.5" step="0.01" value={photoScale} onChange={e => setPhotoScale(parseFloat(e.target.value))} style={{ flex: 1 }} /><span className="range-label">{Math.round(photoScale * 100)}%</span></div><button className="btn-option" style={{ width: '100%', marginTop: '8px' }} onClick={() => document.getElementById('f').click()}>📷 写真を変更</button><input id="f" type="file" hidden onChange={e => { const r = new FileReader(); r.onload = ev => { setPreviewImage(ev.target.result); setPhotoPos({ x: 0, y: 0 }); setPhotoScale(1.0); }; r.readAsDataURL(e.target.files[0]); }} accept="image/*" /></div>
-                <button className="btn-main" onClick={download}>💾 背景透過PNGを保存</button>
-                <button className="btn-guide" onClick={() => setShowGuide(true)}>🖨️ ステッカーを実際に作る方法</button>
+
+                <div className="card">
+                    <span className="card-title">1. 形を選ぶ</span>
+                    <div className="control-grid">
+                        {['circle', 'square', 'star', 'heart'].map(s => (
+                            <button
+                                key={s}
+                                className={`btn-option ${shape === s ? 'active' : ''}`}
+                                onClick={() => {
+                                    setShape(s);
+                                    if (s === 'heart') setPhotoScale(p => Math.max(p, 1.3));
+                                }}
+                            >
+                                {s === 'circle' ? '🔵 丸' : s === 'square' ? '🟦 四角' : s === 'star' ? '⭐ 星' : '❤️ ハート'}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                <div className="card">
+                    <span className="card-title">2. カスタマイズ</span>
+                    <input
+                        type="text"
+                        value={text}
+                        onChange={(e) => setText(e.target.value)}
+                        placeholder="名前を入力"
+                        maxLength={15}
+                    />
+                    <div className="range-row">
+                        <span className="range-label">文字色</span>
+                        <input
+                            type="color"
+                            value={textColor}
+                            onChange={(e) => setTextColor(e.target.value)}
+                            style={{ flex: 1, height: '40px', border: 'none', borderRadius: '8px' }}
+                        />
+                    </div>
+                    <div className="range-row">
+                        <span className="range-label">写真サイズ</span>
+                        <input
+                            type="range" min="0.5" max="2.5" step="0.01"
+                            value={photoScale}
+                            onChange={(e) => setPhotoScale(parseFloat(e.target.value))}
+                            style={{ flex: 1 }}
+                        />
+                        <span className="range-label">{Math.round(photoScale * 100)}%</span>
+                    </div>
+                    <button
+                        className="btn-option"
+                        style={{ width: '100%', marginTop: '8px' }}
+                        onClick={() => document.getElementById('f').click()}
+                    >
+                        📷 写真を変更
+                    </button>
+                    <input
+                        id="f" type="file" hidden
+                        onChange={(e) => {
+                            const r = new FileReader();
+                            r.onload = (ev) => {
+                                setPreviewImage(ev.target.result);
+                                setPhotoPos({ x: 0, y: 0 });
+                                setPhotoScale(1.0);
+                            };
+                            r.readAsDataURL(e.target.files[0]);
+                        }}
+                        accept="image/*"
+                    />
+                </div>
+
+                <button className="btn-main" onClick={download}>
+                    💾 背景透過PNGを保存
+                </button>
+                <button className="btn-guide" onClick={() => setShowGuide(true)}>
+                    🖨️ ステッカーを実際に作る方法
+                </button>
+
                 {showGuide && (
-                    <div className="modal-overlay" onClick={() => setShowGuide(false)}><div className="modal-sheet" onClick={e => e.stopPropagation()}><div className="modal-handle" /><div className="modal-title">🖨️ ステッカーを実際に作ろう</div><div className="guide-section"><h3>① コンビニで印刷（セブンイレブン）</h3><ol className="guide-steps">{['保存したPNGを用意する', '「かんたんnetprint」をインストール', '画像を登録（ハガキサイズ推奨）', '予約番号をメモ', '店舗でネットプリントを選び印刷'].map((s, i) => (<li key={i}><span className="step-num">{i + 1}</span><span>{s}</span></li>))}</ol><div className="store-btns">
-                    <a className="store-btn store-btn-ios" href="https://apps.apple.com/jp/app/%E3%81%8B%E3%82%93%E3%81%9F%E3%82%93netprint/id1436423456" target="_blank" rel="noopener noreferrer">App Store</a>
-                    <a className="store-btn store-btn-android" href="https://play.google.com/store/apps/details?id=jp.co.fujifilm.fb.netprint.simple&hl=ja" target="_blank" rel="noopener noreferrer">Google Play</a>
-                    </div></div><div className="guide-section"><h3>② 印刷屋さんで作成</h3><p style={{fontSize:'0.85rem', color:'#475569', lineHeight:'1.6'}}>ラクスルやグラフィックがおすすめ。5cm角程度ならこの1000pxデータで十分綺麗です。</p></div><button className="modal-close" onClick={() => setShowGuide(false)}>閉じる</button></div></div>
-                )}<canvas ref={canvasRef} style={{ display: 'none' }} />
+                    <div className="modal-overlay" onClick={() => setShowGuide(false)}>
+                        <div className="modal-sheet" onClick={e => e.stopPropagation()}>
+                            <div className="modal-handle" />
+                            <div className="modal-title">🖨️ ステッカーを実際に作ろう</div>
+
+                            <div className="guide-section">
+                                <h3>① コンビニで手軽に印刷（セブンイレブン）</h3>
+                                <ol className="guide-steps">
+                                    {[
+                                        '保存したPNG画像をスマホに用意する',
+                                        '「かんたんnetprint」アプリをインストール',
+                                        'アプリで画像を登録（用紙はハガキサイズがおすすめ）',
+                                        '発行された予約番号をメモ',
+                                        'セブンイレブンのコピー機で「ネットプリント」を選び番号を入力して印刷',
+                                    ].map((s, i) => (
+                                        <li key={i}>
+                                            <span className="step-num">{i + 1}</span>
+                                            <span>{s}</span>
+                                        </li>
+                                    ))}
+                                </ol>
+                                <div className="store-btns">
+                                    <a className="store-btn store-btn-ios"
+                                        href="https://apps.apple.com/jp/app/id1552990335"
+                                        target="_blank" rel="noopener noreferrer">
+                                        App Store からダウンロード
+                                    </a>
+                                    <a className="store-btn store-btn-android"
+                                        href="https://play.google.com/store/apps/details?id=com.fujifilm.fb.netprint.kantan&hl=ja"
+                                        target="_blank" rel="noopener noreferrer">
+                                        Google Play で手に入れる
+                                    </a>
+                                </div>
+                            </div>
+
+                            <div className="guide-section">
+                                <h3>② 印刷屋さんで本格的に作成</h3>
+                                <p style={{fontSize:'0.85rem', color:'#475569', marginBottom:'10px', lineHeight:'1.6'}}>
+                                    販売用・イベント配布用など大量に作りたい場合は、ラクスルやグラフィックなどの印刷業者がおすすめです。
+                                </p>
+                                <div className="guide-note">
+                                    💡 印刷業者への入稿は通常300dpi以上の高解像度データが必要です。このアプリは1000×1000pxで出力するため、小さめサイズ（5cm角程度）であれば十分な品質で印刷できます。
+                                </div>
+                            </div>
+
+                            <button className="modal-close" onClick={() => setShowGuide(false)}>
+                                閉じる
+                            </button>
+                        </div>
+                    </div>
+                )}
+                <canvas ref={canvasRef} style={{ display: 'none' }} />
             </div>
         );
     }
+
     ReactDOM.createRoot(document.getElementById('root')).render(<App />);
 </script>
 </body>
 </html>
-
