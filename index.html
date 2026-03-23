@@ -224,7 +224,8 @@
         const leftmost = lx - r;
         const ltx = lx - r * 0.3, lty = ty + r * 0.95;
         const rtx = rx + r * 0.3, rty = ty + r * 0.95;
-        return [`M ${cx} ${ty}`, `C ${cx - s*0.07} ${ty - s*0.22}, ${leftmost} ${ty - s*0.38}, ${leftmost} ${ty}`, `C ${leftmost} ${ty + r*0.75}, ${ltx} ${lty}, ${bx} ${by}`, `C ${rtx} ${rty}, ${lx + (rx - lx) + r} ${ty + r*0.75}, ${lx + (rx - lx) + r} ${ty}`, `C ${lx + (rx - lx) + r} ${ty - s*0.38}, ${cx + s*0.07} ${ty - s*0.22}, ${cx} ${ty}`, 'Z'].join(' ');
+        const rightmost = lx + (rx - lx) + r;
+        return [`M ${cx} ${ty}`, `C ${cx - s*0.07} ${ty - s*0.22}, ${leftmost} ${ty - s*0.38}, ${leftmost} ${ty}`, `C ${leftmost} ${ty + r*0.75}, ${ltx} ${lty}, ${bx} ${by}`, `C ${rtx} ${rty}, ${rightmost} ${ty + r*0.75}, ${rightmost} ${ty}`, `C ${rightmost} ${ty - s*0.38}, ${cx + s*0.07} ${ty - s*0.22}, ${cx} ${ty}`, 'Z'].join(' ');
     }
 
     /* ── 丸みのある星形パス ── */
