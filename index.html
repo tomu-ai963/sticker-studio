@@ -28,7 +28,7 @@
             max-width: 480px;
             margin: 0 auto;
             padding: 20px;
-            padding-bottom: 140px;
+            padding-bottom: 200px;
         }
         .app-header { text-align: center; margin-bottom: 15px; }
         .app-header h1 { font-size: 1.4rem; font-weight: 800; margin: 0; }
@@ -124,6 +124,88 @@
             font-weight: 800; cursor: pointer;
             box-shadow: 0 10px 20px rgba(16,185,129,0.3);
             z-index: 100;
+        }
+        .btn-guide {
+            position: fixed; bottom: 85px;
+            left: 50%; transform: translateX(-50%);
+            width: calc(100% - 30px); max-width: 450px;
+            background: #fff; color: var(--primary);
+            font-size: 0.95rem; padding: 14px;
+            border: 2px solid var(--primary); border-radius: 16px;
+            font-weight: 800; cursor: pointer;
+            z-index: 100;
+        }
+        .modal-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 200;
+            display: flex; align-items: flex-end;
+            animation: fadeIn 0.2s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .modal-sheet {
+            background: #fff;
+            width: 100%; max-height: 85vh;
+            border-radius: 24px 24px 0 0;
+            overflow-y: auto;
+            padding: 24px 20px 40px;
+            box-sizing: border-box;
+            animation: slideUp 0.25s ease;
+        }
+        @keyframes slideUp { from { transform: translateY(60px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .modal-handle {
+            width: 40px; height: 4px;
+            background: #e2e8f0; border-radius: 2px;
+            margin: 0 auto 20px;
+        }
+        .modal-title {
+            font-size: 1.2rem; font-weight: 800;
+            text-align: center; margin-bottom: 20px;
+            color: var(--text);
+        }
+        .guide-section { margin-bottom: 24px; }
+        .guide-section h3 {
+            font-size: 0.95rem; font-weight: 800;
+            color: var(--primary); margin-bottom: 10px;
+            padding-bottom: 6px;
+            border-bottom: 2px solid #eff6ff;
+        }
+        .guide-steps {
+            list-style: none; padding: 0; margin: 0;
+            display: flex; flex-direction: column; gap: 8px;
+        }
+        .guide-steps li {
+            display: flex; gap: 10px; align-items: flex-start;
+            font-size: 0.85rem; line-height: 1.5; color: #475569;
+        }
+        .step-num {
+            background: var(--primary); color: #fff;
+            border-radius: 50%; width: 22px; height: 22px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.7rem; font-weight: 800; flex-shrink: 0;
+        }
+        .guide-note {
+            background: #fefce8; border: 1px solid #fde68a;
+            border-radius: 10px; padding: 12px;
+            font-size: 0.8rem; color: #92400e; line-height: 1.5;
+        }
+        .store-btns {
+            display: flex; flex-direction: column; gap: 8px; margin-top: 14px;
+        }
+        .store-btn {
+            display: block; text-align: center;
+            padding: 12px; border-radius: 12px;
+            font-weight: 800; font-size: 0.85rem;
+            text-decoration: none;
+        }
+        .store-btn-ios { background: #000; color: #fff; }
+        .store-btn-android { background: #16a34a; color: #fff; }
+        .modal-close {
+            display: block; width: 100%;
+            margin-top: 16px; padding: 14px;
+            background: #f1f5f9; border: none;
+            border-radius: 12px; font-weight: 800;
+            font-size: 0.95rem; color: #64748b; cursor: pointer;
         }
     </style>
 </head>
@@ -264,21 +346,21 @@
         const [textColor, setTextColor] = useState('#ffffff');
         // 六芒星SVGをBase64化してデフォルト画像に使用
         const defaultStar6 = 'data:image/svg+xml;base64,' + btoa(`
-	<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
-        <rect width="300" height="300" fill="#f8f8f8"/>
-        <g transform="translate(150,150)">
-            <polygon points="0,-110 95.3,55 -95.3,55"
-                fill="none" stroke="#bbbbbb" stroke-width="2"/>
-            <polygon points="0,110 95.3,-55 -95.3,-55"
-                fill="none" stroke="#bbbbbb" stroke-width="2"/>
-        </g>
-        </svg>
-	`);
-	const [previewImage, setPreviewImage] = useState(defaultStar6);
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
+                <rect width="300" height="300" fill="#f8f8f8"/>
+                <g transform="translate(150,150)">
+                    <polygon points="0,-110 95.3,55 -95.3,55"
+                        fill="none" stroke="#bbbbbb" stroke-width="2"/>
+                    <polygon points="0,110 95.3,-55 -95.3,-55"
+                        fill="none" stroke="#bbbbbb" stroke-width="2"/>
+                </g>
+            </svg>
+        `);
+        const [previewImage, setPreviewImage] = useState(defaultStar6);
         const [photoPos, setPhotoPos] = useState({ x: 0, y: 0 });
         const [photoScale, setPhotoScale] = useState(1.0);
         const [textPos, setTextPos] = useState({ x: 90, y: 180 });
-        const drag = useRef({ target: null, last: { x: 0, y: 0 } });
+        const [showGuide, setShowGuide] = useState(false);
         const labelRef = useRef(null);
         const canvasRef = useRef(null);
 
@@ -502,6 +584,62 @@
                 <button className="btn-main" onClick={download}>
                     💾 背景透過PNGを保存
                 </button>
+                <button className="btn-guide" onClick={() => setShowGuide(true)}>
+                    🖨️ ステッカーを実際に作る方法
+                </button>
+
+                {showGuide && (
+                    <div className="modal-overlay" onClick={() => setShowGuide(false)}>
+                        <div className="modal-sheet" onClick={e => e.stopPropagation()}>
+                            <div className="modal-handle" />
+                            <div className="modal-title">🖨️ ステッカーを実際に作ろう</div>
+
+                            <div className="guide-section">
+                                <h3>① コンビニで手軽に印刷（セブンイレブン）</h3>
+                                <ol className="guide-steps">
+                                    {[
+                                        '保存したPNG画像をスマホに用意する',
+                                        '「かんたんnetprint」アプリをインストール',
+                                        'アプリで画像を登録（用紙はハガキサイズがおすすめ）',
+                                        '発行された予約番号をメモ',
+                                        'セブンイレブンのコピー機で「ネットプリント」を選び番号を入力して印刷',
+                                    ].map((s, i) => (
+                                        <li key={i}>
+                                            <span className="step-num">{i + 1}</span>
+                                            <span>{s}</span>
+                                        </li>
+                                    ))}
+                                </ol>
+                                <div className="store-btns">
+                                    <a className="store-btn store-btn-ios"
+                                        href="https://apps.apple.com/jp/app/id1436423456"
+                                        target="_blank" rel="noopener noreferrer">
+                                        App Store からダウンロード
+                                    </a>
+                                    <a className="store-btn store-btn-android"
+                                        href="https://play.google.com/store/apps/details?id=jp.co.fujifilm.fb.netprint.simple&hl=ja"
+                                        target="_blank" rel="noopener noreferrer">
+                                        Google Play で手に入れる
+                                    </a>
+                                </div>
+                            </div>
+
+                            <div className="guide-section">
+                                <h3>② 印刷屋さんで本格的に作成</h3>
+                                <p style={{fontSize:'0.85rem', color:'#475569', marginBottom:'10px', lineHeight:'1.6'}}>
+                                    販売用・イベント配布用など大量に作りたい場合は、ラクスルやグラフィックなどの印刷業者がおすすめです。
+                                </p>
+                                <div className="guide-note">
+                                    💡 印刷業者への入稿は通常300dpi以上の高解像度データが必要です。このアプリは1000×1000pxで出力するため、小さめサイズ（5cm角程度）であれば十分な品質で印刷できます。
+                                </div>
+                            </div>
+
+                            <button className="modal-close" onClick={() => setShowGuide(false)}>
+                                閉じる
+                            </button>
+                        </div>
+                    </div>
+                )}
                 <canvas ref={canvasRef} style={{ display: 'none' }} />
             </div>
         );
