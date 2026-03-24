@@ -225,14 +225,18 @@
                     </ul>
                     <button className="btn-option" style={{ width: '100%', marginTop: '10px', background: '#ffd700', color: '#1a1a1a', borderColor: '#b8860b', fontWeight: 800 }} onClick={() => alert('現在Stripe審査中です。承認され次第、こちらから決済が可能になります。')}>💳 プレミアムにアップグレード</button>
                 </div>
+		    <footer className="legal-footer" style={{ padding: '40px 10px', textAlign: 'center' }}>
+    	    <a 
+        	    href="legal.html" 
+          	    target="_blank" 
+          	    rel="noopener noreferrer" 
+          	    style={{ color: '#94a3b8', textDecoration: 'underline', fontSize: '0.8rem' }}
+    	    >
+        特定商取引法に基づく表記
+    </a>
+    <p style={{ marginTop: '10px', fontSize: '0.8rem', color: '#94a3b8' }}>© 2026 とむ</p>
+</footer>
 
-                <footer className="legal-footer">
-                    <p><strong>特定商取引法に基づく表記</strong></p>
-                    <p>運営者：とむ | 連絡先：Inverted.triangle.leef@gmail.com</p>
-                    <p>価格：500円（税込）| 支払：クレジットカード（Stripe）</p>
-                    <p>引渡：決済完了後、即時デジタル機能解放</p>
-                    <p>返品：商品の性質上、返金は承っておりません</p>
-                </footer>
             </div>
         );
     }
