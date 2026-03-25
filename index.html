@@ -178,41 +178,62 @@
             img.crossOrigin = "anonymous"; 
             img.src = previewImage;
             img.onload = () => {
-	    ctx.save();
-	    // 1. 形に合わせた切り抜き（ズレを修正）
-	    if (shape === 'circle') { ctx.beginPath(); ctx.arc(500, 500, 475, 0, Math.PI * 2); ctx.clip(); }
-	    else if (shape === 'square') { ctx.beginPath(); ctx.roundRect(25, 25, 950, 950, 120); ctx.clip(); }
-	    else if (shape === 'star') drawRoundedStarClip(ctx, 500, 500, 475, 220, 5, 60);
-	    else if (shape === 'heart') drawHeartClip(ctx, 500, 500, 580);
+                ctx.save();
+                // 1000x1000キャンバスの中央（500, 500）を基準にクリッピングパスを設定
+                if (shape === 'circle') { 
+                    ctx.beginPath(); 
+                    ctx.arc(500, 500, 470, 0, Math.PI * 2); 
+                    ctx.clip(); 
+                }
+                else if (shape === 'square') { 
+                    ctx.beginPath(); 
+                    ctx.roundRect(50, 50, 900, 900, 120); 
+                    ctx.clip(); 
+                }
+                else if (shape === 'star') drawRoundedStarClip(ctx, 500, 500, 460, 215, 5, 60);
+                else if (shape === 'heart') drawHeartClip(ctx, 500, 500, 560);
 
-	    // 2. 座標とサイズの倍率計算（ここが最重要！）
-	    const s = 1000 / 300;
-	    const asp = img.width / img.height;
-	    const bw = (asp >= 1) ? 300 * asp : 300;
-	    const bh = (asp >= 1) ? 300 : 300 / asp;
+                // プレビューと同じ計算でベースサイズを求める
+                const asp = img.width / img.height;
+                let bw, bh;
+                if (asp >= 1) {
+                    bw = 300 * asp;
+                    bh = 300;
+                } else {
+                    bw = 300;
+                    bh = 300 / asp;
+                }
+                
+                // プレビュー時の画像表示サイズ（300px枠内、photoScaleを適用）
+                const displayW = bw * photoScale;
+                const displayH = bh * photoScale;
+                
+                // 1000pxキャンバスでの表示サイズ（1000/300倍）
+                const canvasDisplayW = displayW * s;
+                const canvasDisplayH = displayH * s;
+                
+                // プレビューと同じ初期位置計算: x = (300 - bw * scale) / 2
+                // 保存時は x * s に変換し、photoPos（ドラッグ移動量）も反映
+                const canvasX = photoPos.x * s;
+                const canvasY = photoPos.y * s;
+                
+                ctx.drawImage(img, canvasX, canvasY, canvasDisplayW, canvasDisplayH);
+                ctx.restore();
 
- 	    // 3. 画像の描画（テスト用の一行をこれに置き換え！）
-	    ctx.drawImage(img, photoPos.x * s, photoPos.y * s, (bw * photoScale) * s, (bh * photoScale) * s);
-	    ctx.restore();
-
-	    // 4. 文字とクレジットの描画
-	    if (labelRef.current) {
-	        const tx = (textPos.x + labelRef.current.offsetWidth / 2) * s;
-	        const ty = (textPos.y + labelRef.current.offsetHeight / 2) * s;
-	        ctx.font = "900 85px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-	        ctx.strokeStyle = "#000"; ctx.lineWidth = 15; ctx.strokeText(text.toUpperCase(), tx, ty);
-	        ctx.fillStyle = textColor; ctx.fillText(text.toUpperCase(), tx, ty);
-	    }
-	    ctx.font = "500 24px sans-serif"; ctx.fillStyle = "rgba(0,0,0,0.3)"; ctx.textAlign = "center"; 
-	    ctx.fillText("Powered by Sticker Studio Free", 500, 970);
-
-	    // 保存実行
-	    const l = document.createElement('a');
-	    l.download = `sticker_${shape}.png`;
-	    l.href = cvs.toDataURL("image/png");
-	    l.click();
-	};
-
+                if (labelRef.current) {
+                    const tx = (textPos.x + labelRef.current.offsetWidth / 2) * s; 
+                    const ty = (textPos.y + labelRef.current.offsetHeight / 2) * s;
+                    ctx.font = "900 85px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+                    ctx.strokeStyle = "#000"; ctx.lineWidth = 15; ctx.strokeText(text.toUpperCase(), tx, ty);
+                    ctx.fillStyle = textColor; ctx.fillText(text.toUpperCase(), tx, ty);
+                }
+                ctx.font = "500 24px sans-serif"; ctx.fillStyle = "rgba(0,0,0,0.3)"; ctx.textAlign = "center"; ctx.fillText("Powered by Sticker Studio Free", 500, 960);
+                
+                const l = document.createElement('a'); 
+                l.download = `sticker_${shape}.png`; 
+                l.href = cvs.toDataURL("image/png"); 
+                l.click();
+            };
         };
 
         const adjustScale = (delta) => {
