@@ -204,15 +204,18 @@
                     bh = 300 / asp;
                 }
                 
-                // プレビューの photoPos.x/y をそのまま倍率(s)でスケーリング
-                const canvasX = photoPos.x * s;
-                const canvasY = photoPos.y * s;
-                
-                // 描画サイズもベースサイズに photoScale と s を掛けるだけ
-                const canvasDisplayW = bw * photoScale * s;
-                const canvasDisplayH = bh * photoScale * s;
-                
-                ctx.drawImage(img, photoPos.x * s, photoPos.y * s, (bw * photoScale) * s, (bh * photoScale) * s);
+
+                // 1. 画像のベースサイズを再計算（300px枠基準）
+                const asp = img.width / img.height;
+                const bw = (asp >= 1) ? 300 * asp : 300;
+                const bh = (asp >= 1) ? 300 : 300 / asp;
+
+                // 2. 移動座標(photoPos)を保存倍率(s)で換算
+                const finalX = photoPos.x * s;
+                const finalY = photoPos.y * s;
+
+                // 3. 描画（サイズにも photoScale と s を掛ける）
+                ctx.drawImage(img, finalX, finalY, (bw * photoScale) * s, (bh * photoScale) * s);
                 ctx.restore();
 
                 if (labelRef.current) {
