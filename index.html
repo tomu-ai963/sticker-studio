@@ -179,7 +179,6 @@
             img.src = previewImage;
             img.onload = () => {
                 ctx.save();
-                // 1000x1000キャンバスの中央（500, 500）を基準にクリッピングパスを設定
                 if (shape === 'circle') { 
                     ctx.beginPath(); 
                     ctx.arc(500, 500, 470, 0, Math.PI * 2); 
@@ -193,7 +192,6 @@
                 else if (shape === 'star') drawRoundedStarClip(ctx, 500, 500, 460, 215, 5, 60);
                 else if (shape === 'heart') drawHeartClip(ctx, 500, 500, 560);
 
-                // プレビューと同じ計算でベースサイズを求める
                 const asp = img.width / img.height;
                 let bw, bh;
                 if (asp >= 1) {
@@ -204,21 +202,13 @@
                     bh = 300 / asp;
                 }
                 
-                // プレビュー時の画像表示サイズ（300px枠内、photoScaleを適用）
-                const displayW = bw * photoScale;
-                const displayH = bh * photoScale;
-                
-                // 1000pxキャンバスでの表示サイズ（1000/300倍）
-                const canvasDisplayW = displayW * s;
-                const canvasDisplayH = displayH * s;
-                
-                // プレビューと同じ初期位置計算: x = (300 - bw * scale) / 2
-                // 保存時は x * s に変換し、photoPos（ドラッグ移動量）も反映
+                // プレビューの「transform-origin: top left」を1000pxキャンバスで完全再現
                 const canvasX = photoPos.x * s;
                 const canvasY = photoPos.y * s;
-                
+                const canvasDisplayW = bw * photoScale * s;
+                const canvasDisplayH = bh * photoScale * s;
+
                 ctx.drawImage(img, canvasX, canvasY, canvasDisplayW, canvasDisplayH);
-                ctx.restore();
 
                 if (labelRef.current) {
                     const tx = (textPos.x + labelRef.current.offsetWidth / 2) * s; 
@@ -327,3 +317,4 @@
 </script>
 </body>
 </html>
+
