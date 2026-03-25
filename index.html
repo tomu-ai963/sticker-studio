@@ -212,7 +212,7 @@
                 const canvasDisplayW = bw * photoScale * s;
                 const canvasDisplayH = bh * photoScale * s;
                 
-                ctx.drawImage(img, canvasX, canvasY, canvasDisplayW, canvasDisplayH);
+                ctx.drawImage(img, photoPos.x * s, photoPos.y * s, (bw * photoScale) * s, (bh * photoScale) * s);
                 ctx.restore();
 
                 if (labelRef.current) {
