@@ -177,10 +177,19 @@
             img.src = previewImage;
             img.onload = () => {
                 ctx.save();
-                if (shape === 'circle') { ctx.beginPath(); ctx.arc(500, 500, 485, 0, Math.PI * 2); ctx.clip(); }
-                else if (shape === 'square') { ctx.beginPath(); ctx.roundRect(30, 30, 940, 940, 100); ctx.clip(); }
-                else if (shape === 'star') drawRoundedStarClip(ctx, 500, 500, 490, 230, 5, 60);
-                else if (shape === 'heart') drawHeartClip(ctx, 500, 500, 595);
+                // 1000x1000キャンバスの中央（500, 500）を基準にクリッピングパスを設定
+                if (shape === 'circle') { 
+                    ctx.beginPath(); 
+                    ctx.arc(500, 500, 470, 0, Math.PI * 2); 
+                    ctx.clip(); 
+                }
+                else if (shape === 'square') { 
+                    ctx.beginPath(); 
+                    ctx.roundRect(50, 50, 900, 900, 120); 
+                    ctx.clip(); 
+                }
+                else if (shape === 'star') drawRoundedStarClip(ctx, 500, 500, 460, 215, 5, 60);
+                else if (shape === 'heart') drawHeartClip(ctx, 500, 500, 560);
 
                 const asp = img.width / img.height; 
                 const bw = asp >= 1 ? 300 : 300 * asp; 
@@ -248,16 +257,15 @@
                                 // 横長: 高さを300に合わせる
                                 baseW = 300 * asp;
                                 baseH = 300;
-                                scale = 1.0; // containの場合、高さが300なのでscaleは1でOK
+                                scale = 1.0;
                             } else {
                                 // 縦長: 幅を300に合わせる
                                 baseW = 300;
                                 baseH = 300 / asp;
-                                scale = 1.0; // containの場合、幅が300なのでscaleは1でOK
+                                scale = 1.0;
                             }
                             
                             // 中央配置の計算
-                            // 表示サイズは baseW * scale, baseH * scale
                             const x = (300 - baseW * scale) / 2;
                             const y = (300 - baseH * scale) / 2;
                             
