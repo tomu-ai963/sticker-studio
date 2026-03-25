@@ -193,11 +193,18 @@
                 else if (shape === 'star') drawRoundedStarClip(ctx, 500, 500, 460, 215, 5, 60);
                 else if (shape === 'heart') drawHeartClip(ctx, 500, 500, 560);
 
-                const asp = img.width / img.height; 
-                const bw = asp >= 1 ? 300 : 300 * asp; 
-                const bh = asp >= 1 ? 300 / asp : 300;
+                // プレビューと同じ計算でベースサイズを求める
+                const asp = img.width / img.height;
+                let bw, bh;
+                if (asp >= 1) {
+                    bw = 300 * asp;
+                    bh = 300;
+                } else {
+                    bw = 300;
+                    bh = 300 / asp;
+                }
                 
-                // プレビュー時の画像表示サイズ（300px枠内）
+                // プレビュー時の画像表示サイズ（300px枠内、photoScaleを適用）
                 const displayW = bw * photoScale;
                 const displayH = bh * photoScale;
                 
@@ -205,11 +212,10 @@
                 const canvasDisplayW = displayW * s;
                 const canvasDisplayH = displayH * s;
                 
-                // 1000pxキャンバスの中央を基準に配置
-                // プレビューの中央は(150, 150)、保存時の中央は(500, 500)
-                // photoPos.xはプレビュー上での移動量なので、そのまま倍率を適用
-                const canvasX = (1000 - canvasDisplayW) / 2 + photoPos.x * s;
-                const canvasY = (1000 - canvasDisplayH) / 2 + photoPos.y * s;
+                // プレビューと同じ初期位置計算: x = (300 - bw * scale) / 2
+                // 保存時は x * s に変換し、photoPos（ドラッグ移動量）も反映
+                const canvasX = photoPos.x * s;
+                const canvasY = photoPos.y * s;
                 
                 ctx.drawImage(img, canvasX, canvasY, canvasDisplayW, canvasDisplayH);
                 ctx.restore();
