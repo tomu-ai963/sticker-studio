@@ -8,14 +8,7 @@
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <style>
-        :root {
-            --primary: #3b82f6;
-            --background: #f1f5f9;
-            --surface: #ffffff;
-            --border: #e2e8f0;
-            --text: #1e293b;
-            --success: #10b981;
-        }
+        :root { --primary: #3b82f6; --background: #f1f5f9; --surface: #ffffff; --border: #e2e8f0; --text: #1e293b; --success: #10b981; }
         body { margin: 0; background: var(--background); font-family: sans-serif; color: var(--text); overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         .app-container { max-width: 480px; margin: 0 auto; padding: 20px; padding-bottom: 200px; }
         .app-header { text-align: center; margin-bottom: 15px; }
@@ -24,7 +17,6 @@
         .studio-container { position: relative; width: 300px; height: 300px; margin: 0 auto; background: var(--surface); border-radius: 16px; overflow: hidden; border: 4px solid #fff; box-shadow: 0 8px 25px rgba(0,0,0,0.1); touch-action: none; }
         .sticker-mask { position: absolute; top: 0; left: 0; width: 300px; height: 300px; z-index: 10; pointer-events: none; }
         .photo-layer { position: absolute; top: 0; left: 0; transform-origin: top left; z-index: 5; pointer-events: auto; cursor: grab; }
-        .photo-layer:active { cursor: grabbing; }
         .sticker-label { position: absolute; z-index: 20; font-weight: 900; text-shadow: 2px 2px 0 #000, -1px -1px 0 #000; padding: 5px 10px; white-space: nowrap; user-select: none; pointer-events: auto; cursor: move; border-radius: 4px; }
         .card { background: var(--surface); padding: 15px; border-radius: 18px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 15px; border: 1px solid var(--border); }
         .card-title { font-size: 0.8rem; font-weight: 800; color: #64748b; margin-bottom: 10px; display: block; text-transform: uppercase; }
@@ -32,51 +24,29 @@
         .btn-option { padding: 12px 5px; border-radius: 12px; border: 2px solid var(--border); background: #fff; cursor: pointer; font-size: 0.85rem; font-weight: 700; }
         .btn-option.active { border-color: var(--primary); background: #eff6ff; color: var(--primary); }
         input[type="text"] { width: 100%; padding: 14px; border-radius: 10px; border: 1px solid var(--border); box-sizing: border-box; font-size: 1rem; margin-bottom: 10px; }
-        input[type="color"] { width: 100%; height: 45px; border-radius: 10px; border: none; cursor: pointer; }
-        input[type="range"] { width: 100%; cursor: pointer; margin: 0; }
         .range-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
         .range-label { font-size: 0.75rem; color: #64748b; white-space: nowrap; }
         .btn-adjust { padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); background: #fff; cursor: pointer; font-size: 0.9rem; font-weight: 700; color: var(--primary); }
-        .btn-adjust:active { background: #eff6ff; }
         .btn-main { position: fixed; bottom: 15px; left: 50%; transform: translateX(-50%); width: calc(100% - 30px); max-width: 450px; background: var(--success); color: #fff; font-size: 1.1rem; padding: 20px; border: none; border-radius: 16px; font-weight: 800; cursor: pointer; box-shadow: 0 10px 20px rgba(16,185,129,0.3); z-index: 100; }
         .btn-guide { position: fixed; bottom: 85px; left: 50%; transform: translateX(-50%); width: calc(100% - 30px); max-width: 450px; background: #fff; color: var(--primary); font-size: 0.95rem; padding: 14px; border: 2px solid var(--primary); border-radius: 16px; font-weight: 800; cursor: pointer; z-index: 100; }
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; display: flex; align-items: flex-end; animation: fadeIn 0.2s ease; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .modal-sheet { background: #fff; width: 100%; max-height: 85vh; border-radius: 24px 24px 0 0; overflow-y: auto; padding: 24px 20px 40px; box-sizing: border-box; animation: slideUp 0.25s ease; }
-        @keyframes slideUp { from { transform: translateY(60px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        .modal-handle { width: 40px; height: 4px; background: #e2e8f0; border-radius: 2px; margin: 0 auto 20px; }
-        .modal-title { font-size: 1.2rem; font-weight: 800; text-align: center; margin-bottom: 20px; color: var(--text); }
-        .guide-section { margin-bottom: 24px; }
-        .guide-section h3 { font-size: 0.95rem; font-weight: 800; color: var(--primary); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 2px solid #eff6ff; }
-        .guide-steps { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
-        .guide-steps li { display: flex; gap: 10px; align-items: flex-start; font-size: 0.85rem; line-height: 1.5; color: #475569; }
-        .step-num { background: var(--primary); color: #fff; border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800; flex-shrink: 0; }
-        .guide-note { background: #fefce8; border: 1px solid #fde68a; border-radius: 10px; padding: 12px; font-size: 0.8rem; color: #92400e; line-height: 1.5; }
-        .store-btns { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
-        .store-btn { display: block; text-align: center; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 0.85rem; text-decoration: none; }
-        .store-btn-ios { background: #000; color: #fff; }
-        .store-btn-android { background: #16a34a; color: #fff; }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; display: flex; align-items: flex-end; }
+        .modal-sheet { background: #fff; width: 100%; max-height: 85vh; border-radius: 24px 24px 0 0; padding: 24px 20px 40px; box-sizing: border-box; }
+        .store-btn { display: block; text-align: center; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 0.85rem; text-decoration: none; color: #fff; margin-top: 8px; }
+        .store-btn-ios { background: #000; } .store-btn-android { background: #16a34a; }
         .premium-card { border: 2px solid #ffd700; background: #fffdf0; }
-        .premium-list { list-style: none; padding: 0; margin: 10px 0; font-size: 0.82rem; line-height: 1.9; }
-        .premium-list li { display: flex; align-items: center; gap: 8px; }
-        .legal-footer { font-size: 0.65rem; color: #94a3b8; text-align: center; padding: 20px 10px; border-top: 1px solid var(--border); margin-top: 10px; line-height: 1.8; }
-        .modal-close { display: block; width: 100%; margin-top: 16px; padding: 14px; background: #f1f5f9; border: none; border-radius: 12px; font-weight: 800; font-size: 0.95rem; color: #64748b; cursor: pointer; }
+        .legal-footer { font-size: 0.65rem; color: #94a3b8; text-align: center; padding: 20px 10px; border-top: 1px solid var(--border); margin-top: 10px; }
     </style>
 </head>
+
 <body>
 <div id="root"></div>
 <script type="text/babel">
     const { useState, useRef, useEffect } = React;
 
     function heartPath(cx, cy, size) {
-        const s = size;
-        const lx = cx - s * 0.27, rx = cx + s * 0.27;
-        const ty = cy - s * 0.18;
-        const r = s * 0.37;
-        const bx = cx, by = cy + s * 0.52;
-        const leftmost = lx - r;
-        const ltx = lx - r * 0.3, lty = ty + r * 0.95;
-        const rtx = rx + r * 0.3, rty = ty + r * 0.95;
+        const s = size; const lx = cx - s * 0.27, rx = cx + s * 0.27; const ty = cy - s * 0.18;
+        const r = s * 0.37; const bx = cx, by = cy + s * 0.52; const leftmost = lx - r;
+        const ltx = lx - r * 0.3, lty = ty + r * 0.95; const rtx = rx + r * 0.3, rty = ty + r * 0.95;
         return [`M ${cx} ${ty}`, `C ${cx - s*0.07} ${ty - s*0.22}, ${leftmost} ${ty - s*0.38}, ${leftmost} ${ty}`, `C ${leftmost} ${ty + r*0.75}, ${ltx} ${lty}, ${bx} ${by}`, `C ${rtx} ${rty}, ${lx + (rx - lx) + r} ${ty + r*0.75}, ${lx + (rx - lx) + r} ${ty}`, `C ${lx + (rx - lx) + r} ${ty - s*0.38}, ${cx + s*0.07} ${ty - s*0.22}, ${cx} ${ty}`, 'Z'].join(' ');
     }
 
@@ -139,8 +109,7 @@
         const [shape, setShape] = useState('circle');
         const [text, setText] = useState('文字を入力');
         const [textColor, setTextColor] = useState('#ffffff');
-        const defaultStar6 = 'data:image/svg+xml;base64,' + btoa('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300"><rect width="300" height="300" fill="#f8f8f8"/><g transform="translate(150,150)"><polygon points="0,-110 95.3,55 -95.3,55" fill="none" stroke="#bbbbbb" stroke-width="2"/><polygon points="0,110 95.3,-55 -95.3,-55" fill="none" stroke="#bbbbbb" stroke-width="2"/></g></svg>');
-        const [previewImage, setPreviewImage] = useState(defaultStar6);
+        const [previewImage, setPreviewImage] = useState(null);
         const [photoPos, setPhotoPos] = useState({ x: 0, y: 0 });
         const [photoScale, setPhotoScale] = useState(1.0);
         const [textPos, setTextPos] = useState({ x: 90, y: 180 });
@@ -170,49 +139,30 @@
         }, []);
 
         const download = () => {
+            if (!previewImage) return;
             const cvs = canvasRef.current; const ctx = cvs.getContext('2d');
-            cvs.width = 1000; cvs.height = 1000; ctx.clearRect(0, 0, 1000, 1000);
-            const s = 1000 / 300;
+            const S = 1000 / 300;
+            cvs.width = 1000; cvs.height = 1000;
             
             const img = new Image(); 
             img.crossOrigin = "anonymous"; 
-            img.src = previewImage;
             img.onload = () => {
                 ctx.save();
-                if (shape === 'circle') { 
-                    ctx.beginPath(); 
-                    ctx.arc(500, 500, 470, 0, Math.PI * 2); 
-                    ctx.clip(); 
-                }
-                else if (shape === 'square') { 
-                    ctx.beginPath(); 
-                    ctx.roundRect(50, 50, 900, 900, 120); 
-                    ctx.clip(); 
-                }
+                if (shape === 'circle') { ctx.beginPath(); ctx.arc(500, 500, 470, 0, Math.PI * 2); ctx.clip(); }
+                else if (shape === 'square') { ctx.beginPath(); ctx.roundRect(50, 50, 900, 900, 120); ctx.clip(); }
                 else if (shape === 'star') drawRoundedStarClip(ctx, 500, 500, 460, 215, 5, 60);
                 else if (shape === 'heart') drawHeartClip(ctx, 500, 500, 560);
 
-                const asp = img.width / img.height;
-                let bw, bh;
-                if (asp >= 1) {
-                    bw = 300 * asp;
-                    bh = 300;
-                } else {
-                    bw = 300;
-                    bh = 300 / asp;
-                }
+                const asp = img.width / img.height; 
+                const baseW = asp >= 1 ? 300 : 300 * asp; 
+                const baseH = asp >= 1 ? 300 / asp : 300;
                 
-                // プレビューの「transform-origin: top left」を1000pxキャンバスで完全再現
-                const canvasX = photoPos.x * s;
-                const canvasY = photoPos.y * s;
-                const canvasDisplayW = bw * photoScale * s;
-                const canvasDisplayH = bh * photoScale * s;
+                ctx.drawImage(img, photoPos.x * S, photoPos.y * S, baseW * photoScale * S, baseH * photoScale * S);
+                ctx.restore();
 
-                ctx.drawImage(img, canvasX, canvasY, canvasDisplayW, canvasDisplayH);
-
-                if (labelRef.current) {
-                    const tx = (textPos.x + labelRef.current.offsetWidth / 2) * s; 
-                    const ty = (textPos.y + labelRef.current.offsetHeight / 2) * s;
+                if (text) {
+                    const tx = (textPos.x + (labelRef.current ? labelRef.current.offsetWidth / 2 : 0)) * S; 
+                    const ty = (textPos.y + (labelRef.current ? labelRef.current.offsetHeight / 2 : 0)) * S;
                     ctx.font = "900 85px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
                     ctx.strokeStyle = "#000"; ctx.lineWidth = 15; ctx.strokeText(text.toUpperCase(), tx, ty);
                     ctx.fillStyle = textColor; ctx.fillText(text.toUpperCase(), tx, ty);
@@ -220,96 +170,30 @@
                 ctx.font = "500 24px sans-serif"; ctx.fillStyle = "rgba(0,0,0,0.3)"; ctx.textAlign = "center"; ctx.fillText("Powered by Sticker Studio Free", 500, 960);
                 
                 const l = document.createElement('a'); 
-                l.download = `sticker_${shape}.png`; 
+                l.download = `sticker_${Date.now()}.png`; 
                 l.href = cvs.toDataURL("image/png"); 
                 l.click();
             };
+            img.src = previewImage;
         };
-
-        const adjustScale = (delta) => {
-            const newScale = Math.max(0.1, Math.min(2.5, photoScale + delta));
-            setPhotoScale(newScale);
-        };
-
-        const starPath = roundedStarPath(150, 150, 140, 65, 5, 18);
-        const hPath = heartPath(150, 162, 178);
 
         return (
             <div className="app-container">
                 <div className="app-header"><h1>Sticker Studio</h1><span>Free Edition</span></div>
                 <div className="card" style={{ textAlign: 'center' }}>
                     <div className="studio-container">
-                        <img src={previewImage} className="photo-layer" style={{ transform: `translate(${photoPos.x}px, ${photoPos.y}px) scale(${photoScale})` }} onMouseDown={e => handleStart('photo', e)} onTouchStart={e => handleStart('photo', e)} draggable={false} />
-                        <svg className="sticker-mask" viewBox="0 0 300 300"><defs><mask id="m"><rect width="300" height="300" fill="white" />{shape === 'circle' && <circle cx="150" cy="150" r="143" fill="black" />}{shape === 'square' && <rect x="8" y="8" width="284" height="284" rx="36" fill="black" />}{shape === 'star' && <path d={starPath} fill="black" />}{shape === 'heart' && <path d={hPath} fill="black" />}</mask></defs><rect width="300" height="300" fill="#f1f5f9" mask="url(#m)" />{shape === 'circle' && <circle cx="150" cy="150" r="143" fill="none" stroke="white" strokeWidth="6" />}{shape === 'square' && <rect x="8" y="8" width="284" height="284" rx="36" fill="none" stroke="white" strokeWidth="6" />}{shape === 'star' && <path d={starPath} fill="none" stroke="white" strokeWidth="5" />}{shape === 'heart' && <path d={hPath} fill="none" stroke="white" strokeWidth="5" />}</svg>
-                        <div ref={labelRef} className="sticker-label" style={{ color: textColor, left: textPos.x, top: textPos.y, fontSize: '24px' }} onMouseDown={e => { e.stopPropagation(); handleStart('text', e); }} onTouchStart={e => { e.stopPropagation(); handleStart('text', e); }}>{text}</div>
+                        {previewImage && <img src={previewImage} className="photo-layer" style={{ transform: `translate(${photoPos.x}px, ${photoPos.y}px) scale(${photoScale})` }} onTouchStart={e => handleStart('photo', e)} draggable={false} />}
+                        <svg className="sticker-mask" viewBox="0 0 300 300"><defs><mask id="m"><rect width="300" height="300" fill="white" />{shape === 'circle' && <circle cx="150" cy="150" r="143" fill="black" />}{shape === 'square' && <rect x="8" y="8" width="284" height="284" rx="36" fill="black" />}{shape === 'star' && <path d={roundedStarPath(150, 150, 140, 65, 5, 18)} fill="black" />}{shape === 'heart' && <path d={heartPath(150, 162, 178)} fill="black" />}</mask></defs><rect width="300" height="300" fill="#f1f5f9" mask="url(#m)" /></svg>
+                        <div ref={labelRef} className="sticker-label" style={{ color: textColor, left: textPos.x, top: textPos.y, fontSize: '24px' }} onTouchStart={e => { e.stopPropagation(); handleStart('text', e); }}>{text}</div>
                     </div>
                 </div>
-                <div className="card"><span className="card-title">1. 形を選ぶ</span><div className="control-grid">{['circle', 'square', 'star', 'heart'].map(s => (<button key={s} className={`btn-option ${shape === s ? 'active' : ''}`} onClick={() => { setShape(s); if (s === 'heart') setPhotoScale(p => Math.max(p, 1.3)); }}>{s === 'circle' ? '🔵 丸' : s === 'square' ? '🟦 四角' : s === 'star' ? '⭐ 星' : '❤️ ハート'}</button>))}</div></div>
-                <div className="card"><span className="card-title">2. カスタマイズ</span><input type="text" value={text} onChange={e => setText(e.target.value)} placeholder="名前を入力" maxLength={15} /><div className="range-row"><span className="range-label">文字色</span><input type="color" value={textColor} onChange={e => setTextColor(e.target.value)} style={{ flex: 1, height: '40px', border: 'none', borderRadius: '8px' }} /></div><div className="range-row"><span className="range-label">写真サイズ</span><button className="btn-adjust" onClick={() => adjustScale(-0.01)}>−</button><input type="range" min="0.1" max="2.5" step="0.01" value={photoScale} onChange={e => setPhotoScale(parseFloat(e.target.value))} style={{ flex: 1 }} /><button className="btn-adjust" onClick={() => adjustScale(0.01)}>+</button><span className="range-label">{Math.round(photoScale * 100)}%</span></div><button className="btn-option" style={{ width: '100%', marginTop: '8px' }} onClick={() => document.getElementById('f').click()}>📷 写真を変更</button><input id="f" type="file" hidden onChange={e => { 
-                    const file = e.target.files[0];
-                    if (!file) return;
-                    const r = new FileReader(); 
-                    r.onload = ev => { 
-                        const dataUrl = ev.target.result;
-                        const img = new Image();
-                        img.onload = () => {
-                            const asp = img.width / img.height;
-                            let scale = 1.0;
-                            let baseW = 300;
-                            let baseH = 300;
-
-                            if (asp >= 1) {
-                                baseW = 300 * asp;
-                                baseH = 300;
-                                scale = 1.0;
-                            } else {
-                                baseW = 300;
-                                baseH = 300 / asp;
-                                scale = 1.0;
-                            }
-                            
-                            const x = (300 - baseW * scale) / 2;
-                            const y = (300 - baseH * scale) / 2;
-                            
-                            setPreviewImage(dataUrl);
-                            setPhotoPos({ x, y });
-                            setPhotoScale(scale);
-                        };
-                        img.src = dataUrl;
-                    }; 
-                    r.readAsDataURL(file); 
-                }} accept="image/*" /></div>
-
+                <div className="card"><span className="card-title">1. 形を選ぶ</span><div className="control-grid">{['circle', 'square', 'star', 'heart'].map(s => (<button key={s} className={`btn-option ${shape === s ? 'active' : ''}`} onClick={() => setShape(s)}>{s === 'circle' ? '🔵 丸' : s === 'square' ? '🟦 四角' : s === 'star' ? '⭐ 星' : '❤️ ハート'}</button>))}</div></div>
+                <div className="card"><span className="card-title">2. カスタマイズ</span><input type="text" value={text} onChange={e => setText(e.target.value)} /><div className="range-row"><span className="range-label">文字色</span><input type="color" value={textColor} onChange={e => setTextColor(e.target.value)} style={{ flex: 1, height: '40px' }} /></div><div className="range-row"><span className="range-label">サイズ調整</span><button className="btn-adjust" onClick={() => setPhotoScale(s => Math.max(0.1, s-0.01))}>-</button><input type="range" min="0.1" max="2.5" step="0.01" value={photoScale} onChange={e => setPhotoScale(parseFloat(e.target.value))} style={{ flex: 1 }} /><button className="btn-adjust" onClick={() => setPhotoScale(s => Math.min(2.5, s+0.01))}>+</button></div><button className="btn-option" style={{ width: '100%', marginTop: '8px' }} onClick={() => document.getElementById('f').click()}>📷 写真を変更</button><input id="f" type="file" hidden onChange={e => { const file = e.target.files[0]; if (!file) return; const r = new FileReader(); r.onload = ev => { const img = new Image(); img.onload = () => { const asp = img.width / img.height; const baseW = asp >= 1 ? 300 : 300 * asp; const baseH = asp >= 1 ? 300 / asp : 300; setPreviewImage(ev.target.result); setPhotoScale(1.0); setPhotoPos({ x: (300 - baseW)/2, y: (300 - baseH)/2 }); }; img.src = ev.target.result; }; r.readAsDataURL(file); }} accept="image/*" /></div>
                 <button className="btn-main" onClick={download}>💾 背景透過PNGを保存</button>
-                <button className="btn-guide" onClick={() => setShowGuide(true)}>🖨️ ステッカーを実際に作る方法</button>
-
-                {showGuide && (
-                    <div className="modal-overlay" onClick={() => setShowGuide(false)}><div className="modal-sheet" onClick={e => e.stopPropagation()}><div className="modal-handle" /><div className="modal-title">🖨️ ステッカーを実際に作ろう</div><div className="guide-section"><h3>① コンビニで印刷（セブンイレブン）</h3><ol className="guide-steps">{['保存したPNGをスマホに用意', '「かんたんnetprint」をインストール', '画像を登録（ハガキサイズ推奨）', '予約番号をメモ', '店舗で印刷'].map((s, i) => (<li key={i}><span className="step-num">{i + 1}</span><span>{s}</span></li>))}</ol><div className="store-btns"><a className="store-btn store-btn-ios" href="https://apps.apple.com/jp/app/id1436423456" target="_blank" rel="noopener noreferrer">🍎 App Store</a><a className="store-btn store-btn-android" href="https://play.google.com/store/search?q=%E3%81%8B%E3%82%93%E3%81%9F%E3%82%93netprint" target="_blank" rel="noopener noreferrer">🤖 Google Play</a></div></div><div className="guide-section"><h3>② 印刷屋さんで作成</h3><p style={{fontSize:'0.85rem', color:'#475569', lineHeight:'1.6'}}>ラクスルやグラフィックがおすすめ。5cm角程度なら綺麗に仕上がります。</p></div><button className="modal-close" onClick={() => setShowGuide(false)}>閉じる</button></div></div>
-                )}<canvas ref={canvasRef} style={{ display: 'none' }} />
-
-                <div className="card premium-card">
-                    <span className="card-title" style={{ color: '#b8860b' }}>💎 プレミアムプラン（買い切り）</span>
-                    <p style={{ fontSize: '0.9rem', fontWeight: 800, margin: '4px 0 8px' }}>500円（税込）・追加料金なし</p>
-                    <ul className="premium-list">
-                        <li>✅ <b>超高画質保存</b>：3000px超で印刷がより綺麗に</li>
-                        <li>✅ <b>ロゴ非表示</b>：クレジットなしで使える</li>
-                        <li>✅ <b>限定フレーム</b>：特別なデザインが解放</li>
-                        <li>✅ <b>買い切り</b>：一度の支払いでずっと使える</li>
-                    </ul>
-                    <button className="btn-option" style={{ width: '100%', marginTop: '10px', background: '#ffd700', color: '#1a1a1a', borderColor: '#b8860b', fontWeight: 800 }} onClick={() => alert('現在Stripe審査中です。承認され次第、こちらから決済が可能になります。')}>💳 プレミアムにアップグレード</button>
-                </div>
-			    <footer className="legal-footer" style={{ padding: '40px 10px', textAlign: 'center' }}>
-    	    <a 
-        	    href="legal.html" 
-          	    target="_blank" 
-          	    rel="noopener noreferrer" 
-          	    style={{ color: '#94a3b8', textDecoration: 'underline', fontSize: '0.8rem' }}
-    	    >
-        特定商取引法に基づく表記
-    </a>
-    <p style={{ marginTop: '10px', fontSize: '0.8rem', color: '#94a3b8' }}>© 2026 とむ</p>
-</footer>
-
+                <button className="btn-guide" onClick={() => setShowGuide(true)}>🖨️ 作り方</button>
+                {showGuide && <div className="modal-overlay" onClick={() => setShowGuide(false)}><div className="modal-sheet" onClick={e => e.stopPropagation()}><a className="store-btn store-btn-ios" href="#">🍎 App Store</a><a className="store-btn store-btn-android" href="#">🤖 Google Play</a><button className="btn-option" style={{width:'100%',marginTop:'10px'}} onClick={()=>setShowGuide(false)}>閉じる</button></div></div>}
+                <canvas ref={canvasRef} style={{ display: 'none' }} />
+                <footer className="legal-footer">© 2026 とむ</footer>
             </div>
         );
     }
