@@ -186,10 +186,19 @@
                 const bw = asp >= 1 ? 300 : 300 * asp; 
                 const bh = asp >= 1 ? 300 / asp : 300;
                 
-                // プレビュー時の photoPos は左上(0,0)基準の移動量
-                // 描画位置は (photoPos.x * s, photoPos.y * s)
-                // サイズは (bw * photoScale * s, bh * photoScale * s)
-                ctx.drawImage(img, photoPos.x * s, photoPos.y * s, bw * photoScale * s, bh * photoScale * s);
+                // プレビュー時の画像表示サイズ（300px枠内）
+                const displayW = bw * photoScale;
+                const displayH = bh * photoScale;
+                
+                // 1000pxキャンバスでの表示サイズ
+                const canvasDisplayW = displayW * s;
+                const canvasDisplayH = displayH * s;
+                
+                // 1000pxキャンバスの中央に配置
+                const canvasX = (1000 - canvasDisplayW) / 2 + photoPos.x * s;
+                const canvasY = (1000 - canvasDisplayH) / 2 + photoPos.y * s;
+                
+                ctx.drawImage(img, canvasX, canvasY, canvasDisplayW, canvasDisplayH);
                 ctx.restore();
 
                 if (labelRef.current) {
