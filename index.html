@@ -215,7 +215,7 @@
                 const finalY = photoPos.y * s;
 
                 // 3. 描画（サイズにも photoScale と s を掛ける）
-                ctx.drawImage(img, finalX, finalY, (bw * photoScale) * s, (bh * photoScale) * s);
+                ctx.drawImage(img, 0, 0, 1000, 1000);
                 ctx.restore();
 
                 if (labelRef.current) {
