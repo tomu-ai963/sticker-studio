@@ -3,317 +3,862 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Sticker Studio Free</title>
-    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <title>Sticker Studio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #3b82f6;
-            --background: #f1f5f9;
+            --primary: #6366f1;
+            --primary-light: #ede9fe;
+            --bg: #f5f3ff;
             --surface: #ffffff;
-            --border: #e2e8f0;
-            --text: #1e293b;
+            --border: #e0e7ff;
+            --text: #1e1b4b;
+            --muted: #6b7280;
             --success: #10b981;
+            --gold: #f59e0b;
         }
-        body { margin: 0; background: var(--background); font-family: sans-serif; color: var(--text); overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
-        .app-container { max-width: 480px; margin: 0 auto; padding: 20px; padding-bottom: 200px; }
-        .app-header { text-align: center; margin-bottom: 15px; }
-        .app-header h1 { font-size: 1.4rem; font-weight: 800; margin: 0; }
-        .app-header span { font-size: 0.8rem; color: var(--primary); font-weight: 600; }
-        .studio-container { position: relative; width: 300px; height: 300px; margin: 0 auto; background: var(--surface); border-radius: 16px; overflow: hidden; border: 4px solid #fff; box-shadow: 0 8px 25px rgba(0,0,0,0.1); touch-action: none; }
-        .sticker-mask { position: absolute; top: 0; left: 0; width: 300px; height: 300px; z-index: 10; pointer-events: none; }
-        .photo-layer { position: absolute; top: 0; left: 0; transform-origin: top left; z-index: 5; pointer-events: auto; cursor: grab; }
-        .photo-layer:active { cursor: grabbing; }
-        .sticker-label { position: absolute; z-index: 20; font-weight: 900; text-shadow: 2px 2px 0 #000, -1px -1px 0 #000; padding: 5px 10px; white-space: nowrap; user-select: none; pointer-events: auto; cursor: move; border-radius: 4px; }
-        .card { background: var(--surface); padding: 15px; border-radius: 18px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 15px; border: 1px solid var(--border); }
-        .card-title { font-size: 0.8rem; font-weight: 800; color: #64748b; margin-bottom: 10px; display: block; text-transform: uppercase; }
-        .control-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-        .btn-option { padding: 12px 5px; border-radius: 12px; border: 2px solid var(--border); background: #fff; cursor: pointer; font-size: 0.85rem; font-weight: 700; }
-        .btn-option.active { border-color: var(--primary); background: #eff6ff; color: var(--primary); }
-        input[type="text"] { width: 100%; padding: 14px; border-radius: 10px; border: 1px solid var(--border); box-sizing: border-box; font-size: 1rem; margin-bottom: 10px; }
-        input[type="color"] { width: 100%; height: 45px; border-radius: 10px; border: none; cursor: pointer; }
-        input[type="range"] { width: 100%; cursor: pointer; margin: 0; }
-        .range-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-        .range-label { font-size: 0.75rem; color: #64748b; white-space: nowrap; }
-        .btn-adjust { padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); background: #fff; cursor: pointer; font-size: 0.9rem; font-weight: 700; color: var(--primary); }
-        .btn-adjust:active { background: #eff6ff; }
-        .btn-main { position: fixed; bottom: 15px; left: 50%; transform: translateX(-50%); width: calc(100% - 30px); max-width: 450px; background: var(--success); color: #fff; font-size: 1.1rem; padding: 20px; border: none; border-radius: 16px; font-weight: 800; cursor: pointer; box-shadow: 0 10px 20px rgba(16,185,129,0.3); z-index: 100; }
-        .btn-guide { position: fixed; bottom: 85px; left: 50%; transform: translateX(-50%); width: calc(100% - 30px); max-width: 450px; background: #fff; color: var(--primary); font-size: 0.95rem; padding: 14px; border: 2px solid var(--primary); border-radius: 16px; font-weight: 800; cursor: pointer; z-index: 100; }
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; display: flex; align-items: flex-end; animation: fadeIn 0.2s ease; }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            background: var(--bg);
+            font-family: 'Outfit', sans-serif;
+            color: var(--text);
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .app-container {
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 16px 16px 220px;
+        }
+        /* Header */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 18px;
+            padding-top: 8px;
+        }
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 900;
+            margin: 0;
+            letter-spacing: -0.5px;
+            color: var(--text);
+        }
+        .header .badge {
+            font-size: 0.65rem;
+            font-weight: 700;
+            background: var(--primary);
+            color: #fff;
+            padding: 2px 8px;
+            border-radius: 99px;
+            letter-spacing: 0.5px;
+        }
+
+        /* Canvas wrapper */
+        .canvas-wrap {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+        #preview {
+            border-radius: 20px;
+            box-shadow: 0 12px 40px rgba(99,102,241,0.18);
+            touch-action: none;
+            cursor: grab;
+            display: block;
+        }
+        #preview:active { cursor: grabbing; }
+
+        /* Cards */
+        .card {
+            background: var(--surface);
+            border-radius: 18px;
+            padding: 16px;
+            margin-bottom: 14px;
+            border: 1.5px solid var(--border);
+            box-shadow: 0 2px 12px rgba(99,102,241,0.06);
+        }
+        .card-title {
+            font-size: 0.72rem;
+            font-weight: 800;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        /* Shape buttons */
+        .shape-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+        .btn-shape {
+            padding: 12px 4px;
+            border-radius: 12px;
+            border: 2px solid var(--border);
+            background: #fafafa;
+            cursor: pointer;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--muted);
+            transition: all 0.15s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+        .btn-shape .icon { font-size: 1.4rem; }
+        .btn-shape.active {
+            border-color: var(--primary);
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        /* Text input */
+        .text-input {
+            width: 100%;
+            padding: 13px 14px;
+            border-radius: 12px;
+            border: 1.5px solid var(--border);
+            font-family: 'Outfit', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text);
+            background: #fafafa;
+            outline: none;
+            margin-bottom: 12px;
+            transition: border-color 0.15s;
+        }
+        .text-input:focus { border-color: var(--primary); background: #fff; }
+
+        /* Row controls */
+        .ctrl-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .ctrl-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--muted);
+            min-width: 52px;
+        }
+        input[type="color"] {
+            height: 40px;
+            flex: 1;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            padding: 2px;
+        }
+        input[type="range"] {
+            flex: 1;
+            cursor: pointer;
+            accent-color: var(--primary);
+        }
+        .val-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--primary);
+            min-width: 36px;
+            text-align: right;
+        }
+        .btn-adj {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            border: 1.5px solid var(--border);
+            background: #fafafa;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .btn-adj:active { background: var(--primary-light); }
+
+        /* Font size select */
+        .font-size-row {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .btn-fsize {
+            padding: 6px 12px;
+            border-radius: 8px;
+            border: 1.5px solid var(--border);
+            background: #fafafa;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--muted);
+        }
+        .btn-fsize.active {
+            border-color: var(--primary);
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        /* Photo button */
+        .btn-photo {
+            width: 100%;
+            padding: 13px;
+            border-radius: 12px;
+            border: 2px dashed var(--primary);
+            background: var(--primary-light);
+            color: var(--primary);
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 800;
+            cursor: pointer;
+            margin-top: 4px;
+        }
+
+        /* Bottom buttons */
+        .btn-save {
+            position: fixed;
+            bottom: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 32px);
+            max-width: 448px;
+            background: var(--success);
+            color: #fff;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.05rem;
+            font-weight: 800;
+            padding: 18px;
+            border: none;
+            border-radius: 16px;
+            cursor: pointer;
+            box-shadow: 0 8px 24px rgba(16,185,129,0.35);
+            z-index: 100;
+        }
+        .btn-guide {
+            position: fixed;
+            bottom: 86px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 32px);
+            max-width: 448px;
+            background: #fff;
+            color: var(--primary);
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 800;
+            padding: 14px;
+            border: 2px solid var(--primary);
+            border-radius: 16px;
+            cursor: pointer;
+            z-index: 100;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.45);
+            z-index: 200;
+            display: flex;
+            align-items: flex-end;
+            animation: fadeIn 0.2s ease;
+        }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .modal-sheet { background: #fff; width: 100%; max-height: 85vh; border-radius: 24px 24px 0 0; overflow-y: auto; padding: 24px 20px 40px; box-sizing: border-box; animation: slideUp 0.25s ease; }
+        .modal-sheet {
+            background: #fff;
+            width: 100%;
+            max-height: 88vh;
+            border-radius: 24px 24px 0 0;
+            overflow-y: auto;
+            padding: 24px 20px 40px;
+            animation: slideUp 0.25s ease;
+        }
         @keyframes slideUp { from { transform: translateY(60px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         .modal-handle { width: 40px; height: 4px; background: #e2e8f0; border-radius: 2px; margin: 0 auto 20px; }
-        .modal-title { font-size: 1.2rem; font-weight: 800; text-align: center; margin-bottom: 20px; color: var(--text); }
-        .guide-section { margin-bottom: 24px; }
-        .guide-section h3 { font-size: 0.95rem; font-weight: 800; color: var(--primary); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 2px solid #eff6ff; }
+        .modal-title { font-size: 1.1rem; font-weight: 900; text-align: center; margin-bottom: 20px; }
+        .guide-section { margin-bottom: 22px; }
+        .guide-section h3 { font-size: 0.9rem; font-weight: 800; color: var(--primary); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 2px solid var(--primary-light); }
         .guide-steps { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
         .guide-steps li { display: flex; gap: 10px; align-items: flex-start; font-size: 0.85rem; line-height: 1.5; color: #475569; }
         .step-num { background: var(--primary); color: #fff; border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800; flex-shrink: 0; }
-        .guide-note { background: #fefce8; border: 1px solid #fde68a; border-radius: 10px; padding: 12px; font-size: 0.8rem; color: #92400e; line-height: 1.5; }
         .store-btns { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
         .store-btn { display: block; text-align: center; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 0.85rem; text-decoration: none; }
         .store-btn-ios { background: #000; color: #fff; }
         .store-btn-android { background: #16a34a; color: #fff; }
-        .premium-card { border: 2px solid #ffd700; background: #fffdf0; }
-        .premium-list { list-style: none; padding: 0; margin: 10px 0; font-size: 0.82rem; line-height: 1.9; }
+        .modal-close { display: block; width: 100%; margin-top: 16px; padding: 14px; background: #f1f5f9; border: none; border-radius: 12px; font-weight: 800; font-size: 0.95rem; color: #64748b; cursor: pointer; font-family: 'Outfit', sans-serif; }
+
+        /* Premium */
+        .premium-card { border: 2px solid #fcd34d; background: #fffbeb; }
+        .premium-list { list-style: none; padding: 0; margin: 10px 0; font-size: 0.83rem; line-height: 2; }
         .premium-list li { display: flex; align-items: center; gap: 8px; }
-        .legal-footer { font-size: 0.65rem; color: #94a3b8; text-align: center; padding: 20px 10px; border-top: 1px solid var(--border); margin-top: 10px; line-height: 1.8; }
-        .modal-close { display: block; width: 100%; margin-top: 16px; padding: 14px; background: #f1f5f9; border: none; border-radius: 12px; font-weight: 800; font-size: 0.95rem; color: #64748b; cursor: pointer; }
+        .btn-premium { width: 100%; padding: 14px; margin-top: 10px; background: #f59e0b; border: none; border-radius: 12px; font-family: 'Outfit', sans-serif; font-size: 0.95rem; font-weight: 800; color: #1a1a1a; cursor: pointer; }
+
+        .legal-footer { font-size: 0.65rem; color: #94a3b8; text-align: center; padding: 30px 10px; border-top: 1px solid var(--border); margin-top: 6px; line-height: 1.8; }
+        .legal-footer a { color: #94a3b8; text-decoration: underline; }
+
+        /* Drag mode toggle */
+        .mode-toggle {
+            display: flex;
+            background: #f1f5f9;
+            border-radius: 12px;
+            padding: 4px;
+            gap: 4px;
+            margin-bottom: 12px;
+        }
+        .btn-mode {
+            flex: 1;
+            padding: 9px;
+            border: none;
+            border-radius: 9px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.82rem;
+            font-weight: 700;
+            cursor: pointer;
+            background: transparent;
+            color: var(--muted);
+            transition: all 0.15s;
+        }
+        .btn-mode.active {
+            background: #fff;
+            color: var(--primary);
+            box-shadow: 0 2px 8px rgba(99,102,241,0.15);
+        }
     </style>
 </head>
 <body>
-<div id="root"></div>
-<script type="text/babel">
-    const { useState, useRef, useEffect } = React;
+<div class="app-container">
+    <div class="header">
+        <h1>🎨 Sticker Studio</h1>
+        <span class="badge">FREE</span>
+    </div>
 
-    function heartPath(cx, cy, size) {
-        const s = size;
-        const lx = cx - s * 0.27, rx = cx + s * 0.27;
-        const ty = cy - s * 0.18;
-        const r = s * 0.37;
-        const bx = cx, by = cy + s * 0.52;
-        const leftmost = lx - r;
-        const ltx = lx - r * 0.3, lty = ty + r * 0.95;
-        const rtx = rx + r * 0.3, rty = ty + r * 0.95;
-        return [`M ${cx} ${ty}`, `C ${cx - s*0.07} ${ty - s*0.22}, ${leftmost} ${ty - s*0.38}, ${leftmost} ${ty}`, `C ${leftmost} ${ty + r*0.75}, ${ltx} ${lty}, ${bx} ${by}`, `C ${rtx} ${rty}, ${lx + (rx - lx) + r} ${ty + r*0.75}, ${lx + (rx - lx) + r} ${ty}`, `C ${lx + (rx - lx) + r} ${ty - s*0.38}, ${cx + s*0.07} ${ty - s*0.22}, ${cx} ${ty}`, 'Z'].join(' ');
-    }
+    <!-- Canvas preview -->
+    <div class="canvas-wrap">
+        <canvas id="preview" width="300" height="300"></canvas>
+    </div>
 
-    function roundedStarPath(cx, cy, outerR, innerR, points, cornerR) {
-        const PI2 = Math.PI * 2; const step = PI2 / points; const halfStep = step / 2; const verts = [];
-        for (let i = 0; i < points; i++) {
-            const oa = i * step - Math.PI / 2; const ia = oa + halfStep;
-            verts.push({ x: cx + outerR * Math.cos(oa), y: cy + outerR * Math.sin(oa), isOuter: true });
-            verts.push({ x: cx + innerR * Math.cos(ia), y: cy + innerR * Math.sin(ia), isOuter: false });
-        }
-        const n = verts.length; let d = '';
-        for (let i = 0; i < n; i++) {
-            const p = verts[(i - 1 + n) % n]; const c = verts[i]; const nx = verts[(i + 1) % n];
-            const r = c.isOuter ? cornerR : cornerR * 0.5;
-            const dx1 = c.x - p.x, dy1 = c.y - p.y; const l1 = Math.hypot(dx1, dy1);
-            const dx2 = nx.x - c.x, dy2 = nx.y - c.y; const l2 = Math.hypot(dx2, dy2);
-            const t1 = Math.min(r / l1, 0.4); const t2 = Math.min(r / l2, 0.4);
-            const p1x = c.x - dx1 * t1, p1y = c.y - dy1 * t1; const p2x = c.x + dx2 * t2, p2y = c.y + dy2 * t2;
-            if (i === 0) d += `M ${p1x} ${p1y}`; else d += ` L ${p1x} ${p1y}`;
-            d += ` Q ${c.x} ${c.y} ${p2x} ${p2y}`;
-        }
-        return d + ' Z';
-    }
+    <!-- Shape -->
+    <div class="card">
+        <span class="card-title">① 形を選ぶ</span>
+        <div class="shape-grid">
+            <button class="btn-shape active" data-shape="circle" onclick="setShape('circle',this)">
+                <span class="icon">🔵</span>丸
+            </button>
+            <button class="btn-shape" data-shape="square" onclick="setShape('square',this)">
+                <span class="icon">🟦</span>四角
+            </button>
+            <button class="btn-shape" data-shape="star" onclick="setShape('star',this)">
+                <span class="icon">⭐</span>星
+            </button>
+            <button class="btn-shape" data-shape="heart" onclick="setShape('heart',this)">
+                <span class="icon">❤️</span>ハート
+            </button>
+        </div>
+    </div>
 
-    function drawHeartClip(ctx, cx, cy, size) {
-        const s = size; const lx = cx - s * 0.27, rx = cx + s * 0.27; const ty = cy - s * 0.18;
-        const r = s * 0.37; const bx = cx, by = cy + s * 0.52; const leftmost = lx - r;
-        const ltx = lx - r * 0.3, lty = ty + r * 0.95; const rtx = rx + r * 0.3, rty = ty + r * 0.95;
-        const rightmost = lx + (rx - lx) + r;
-        ctx.beginPath(); ctx.moveTo(cx, ty);
-        ctx.bezierCurveTo(cx - s*0.07, ty - s*0.22, leftmost, ty - s*0.38, leftmost, ty);
-        ctx.bezierCurveTo(leftmost, ty + r*0.75, ltx, lty, bx, by);
-        ctx.bezierCurveTo(rtx, rty, rightmost, ty + r*0.75, rightmost, ty);
-        ctx.bezierCurveTo(rightmost, ty - s*0.38, cx + s*0.07, ty - s*0.22, cx, ty);
-        ctx.closePath(); ctx.clip();
-    }
-
-    function drawRoundedStarClip(ctx, cx, cy, outerR, innerR, points, cornerR) {
-        const PI2 = Math.PI * 2; const step = PI2 / points; const halfStep = step / 2; const verts = [];
-        for (let i = 0; i < points; i++) {
-            const oa = i * step - Math.PI / 2; const ia = oa + halfStep;
-            verts.push({ x: cx + outerR * Math.cos(oa), y: cy + outerR * Math.sin(oa), isOuter: true });
-            verts.push({ x: cx + innerR * Math.cos(ia), y: cy + innerR * Math.sin(ia), isOuter: false });
-        }
-        const n = verts.length; ctx.beginPath();
-        for (let i = 0; i < n; i++) {
-            const p = verts[(i - 1 + n) % n]; const c = verts[i]; const nx = verts[(i + 1) % n];
-            const r = c.isOuter ? cornerR : cornerR * 0.5;
-            const dx1 = c.x - p.x, dy1 = c.y - p.y; const l1 = Math.hypot(dx1, dy1);
-            const dx2 = nx.x - c.x, dy2 = nx.y - c.y; const l2 = Math.hypot(dx2, dy2);
-            const t1 = Math.min(r / l1, 0.4); const t2 = Math.min(r / l2, 0.4);
-            const p1x = c.x - dx1 * t1, p1y = c.y - dy1 * t1; const p2x = c.x + dx2 * t2, p2y = c.y + dy2 * t2;
-            if (i === 0) ctx.moveTo(p1x, p1y); else ctx.lineTo(p1x, p1y);
-            ctx.quadraticCurveTo(c.x, c.y, p2x, p2y);
-        }
-        ctx.closePath(); ctx.clip();
-    }
-
-    function App() {
-        const [shape, setShape] = useState('circle');
-        const [text, setText] = useState('文字を入力');
-        const [textColor, setTextColor] = useState('#ffffff');
-        const defaultStar6 = 'data:image/svg+xml;base64,' + btoa('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300"><rect width="300" height="300" fill="#f8f8f8"/><g transform="translate(150,150)"><polygon points="0,-110 95.3,55 -95.3,55" fill="none" stroke="#bbbbbb" stroke-width="2"/><polygon points="0,110 95.3,-55 -95.3,-55" fill="none" stroke="#bbbbbb" stroke-width="2"/></g></svg>');
-        const [previewImage, setPreviewImage] = useState(defaultStar6);
-        const [photoPos, setPhotoPos] = useState({ x: 0, y: 0 });
-        const [photoScale, setPhotoScale] = useState(1.0);
-        const [textPos, setTextPos] = useState({ x: 90, y: 180 });
-        const [showGuide, setShowGuide] = useState(false);
-        const drag = useRef({ target: null, last: { x: 0, y: 0 } });
-        const labelRef = useRef(null);
-        const canvasRef = useRef(null);
-
-        const handleStart = (target, e) => {
-            const point = e.touches ? e.touches[0] : e;
-            drag.current = { target, last: { x: point.clientX, y: point.clientY } };
-        };
-
-        useEffect(() => {
-            const move = (e) => {
-                if (!drag.current.target) return; if (e.cancelable) e.preventDefault();
-                const p = e.touches ? e.touches[0] : e;
-                const dx = p.clientX - drag.current.last.x; const dy = p.clientY - drag.current.last.y;
-                if (drag.current.target === 'photo') setPhotoPos(v => ({ x: v.x + dx, y: v.y + dy }));
-                else if (drag.current.target === 'text') setTextPos(v => ({ x: v.x + dx, y: v.y + dy }));
-                drag.current.last = { x: p.clientX, y: p.clientY };
-            };
-            const end = () => { drag.current.target = null; };
-            window.addEventListener('mousemove', move); window.addEventListener('mouseup', end);
-            window.addEventListener('touchmove', move, { passive: false }); window.addEventListener('touchend', end);
-            return () => { window.removeEventListener('mousemove', move); window.removeEventListener('mouseup', end); window.removeEventListener('touchmove', move); window.removeEventListener('touchend', end); };
-        }, []);
-
-        const download = () => {
-            const cvs = canvasRef.current; const ctx = cvs.getContext('2d');
-            cvs.width = 1000; cvs.height = 1000; ctx.clearRect(0, 0, 1000, 1000);
-            const s = 1000 / 300;
-            
-            const img = new Image(); 
-            img.crossOrigin = "anonymous"; 
-            img.src = previewImage;
-            img.onload = () => {
-                ctx.save();
-                // 1000x1000キャンバスの中央（500, 500）を基準にクリッピングパスを設定
-                if (shape === 'circle') { 
-                    ctx.beginPath(); 
-                    ctx.arc(500, 500, 470, 0, Math.PI * 2); 
-                    ctx.clip(); 
-                }
-                else if (shape === 'square') { 
-                    ctx.beginPath(); 
-                    ctx.roundRect(50, 50, 900, 900, 120); 
-                    ctx.clip(); 
-                }
-                else if (shape === 'star') drawRoundedStarClip(ctx, 500, 500, 460, 215, 5, 60);
-                else if (shape === 'heart') drawHeartClip(ctx, 500, 500, 560);
-
-                // CSSの transform: translate(photoPos.x, photoPos.y) scale(photoScale)
-                // transform-origin: top left なので、
-                // 描画左上座標 = photoPos そのまま
-                // 描画サイズ = ベースサイズ × photoScale
-                const asp = img.width / img.height;
-                const bw = asp >= 1 ? 300 * asp : 300;
-                const bh = asp >= 1 ? 300 : 300 / asp;
-
-                ctx.drawImage(
-                    img,
-                    photoPos.x * s,
-                    photoPos.y * s,
-                    bw * photoScale * s,
-                    bh * photoScale * s
-                );
-                ctx.restore();
-
-                if (labelRef.current) {
-                    const tx = (textPos.x + labelRef.current.offsetWidth / 2) * s; 
-                    const ty = (textPos.y + labelRef.current.offsetHeight / 2) * s;
-                    ctx.font = "900 85px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-                    ctx.strokeStyle = "#000"; ctx.lineWidth = 15; ctx.strokeText(text.toUpperCase(), tx, ty);
-                    ctx.fillStyle = textColor; ctx.fillText(text.toUpperCase(), tx, ty);
-                }
-                ctx.font = "500 24px sans-serif"; ctx.fillStyle = "rgba(0,0,0,0.3)"; ctx.textAlign = "center"; ctx.fillText("Powered by Sticker Studio Free", 500, 960);
-                
-                const l = document.createElement('a'); 
-                l.download = `sticker_${shape}.png`; 
-                l.href = cvs.toDataURL("image/png"); 
-                l.click();
-            };
-        };
-
-        const adjustScale = (delta) => {
-            const newScale = Math.max(0.1, Math.min(2.5, photoScale + delta));
-            setPhotoScale(newScale);
-        };
-
-        const starPath = roundedStarPath(150, 150, 140, 65, 5, 18);
-        const hPath = heartPath(150, 162, 178);
-
-        return (
-            <div className="app-container">
-                <div className="app-header"><h1>Sticker Studio</h1><span>Free Edition</span></div>
-                <div className="card" style={{ textAlign: 'center' }}>
-                    <div className="studio-container">
-                        <img src={previewImage} className="photo-layer" style={{ transform: `translate(${photoPos.x}px, ${photoPos.y}px) scale(${photoScale})` }} onMouseDown={e => handleStart('photo', e)} onTouchStart={e => handleStart('photo', e)} draggable={false} />
-                        <svg className="sticker-mask" viewBox="0 0 300 300"><defs><mask id="m"><rect width="300" height="300" fill="white" />{shape === 'circle' && <circle cx="150" cy="150" r="143" fill="black" />}{shape === 'square' && <rect x="8" y="8" width="284" height="284" rx="36" fill="black" />}{shape === 'star' && <path d={starPath} fill="black" />}{shape === 'heart' && <path d={hPath} fill="black" />}</mask></defs><rect width="300" height="300" fill="#f1f5f9" mask="url(#m)" />{shape === 'circle' && <circle cx="150" cy="150" r="143" fill="none" stroke="white" strokeWidth="6" />}{shape === 'square' && <rect x="8" y="8" width="284" height="284" rx="36" fill="none" stroke="white" strokeWidth="6" />}{shape === 'star' && <path d={starPath} fill="none" stroke="white" strokeWidth="5" />}{shape === 'heart' && <path d={hPath} fill="none" stroke="white" strokeWidth="5" />}</svg>
-                        <div ref={labelRef} className="sticker-label" style={{ color: textColor, left: textPos.x, top: textPos.y, fontSize: '24px' }} onMouseDown={e => { e.stopPropagation(); handleStart('text', e); }} onTouchStart={e => { e.stopPropagation(); handleStart('text', e); }}>{text}</div>
-                    </div>
-                </div>
-                <div className="card"><span className="card-title">1. 形を選ぶ</span><div className="control-grid">{['circle', 'square', 'star', 'heart'].map(s => (<button key={s} className={`btn-option ${shape === s ? 'active' : ''}`} onClick={() => { setShape(s); if (s === 'heart') setPhotoScale(p => Math.max(p, 1.3)); }}>{s === 'circle' ? '🔵 丸' : s === 'square' ? '🟦 四角' : s === 'star' ? '⭐ 星' : '❤️ ハート'}</button>))}</div></div>
-                <div className="card"><span className="card-title">2. カスタマイズ</span><input type="text" value={text} onChange={e => setText(e.target.value)} placeholder="名前を入力" maxLength={15} /><div className="range-row"><span className="range-label">文字色</span><input type="color" value={textColor} onChange={e => setTextColor(e.target.value)} style={{ flex: 1, height: '40px', border: 'none', borderRadius: '8px' }} /></div><div className="range-row"><span className="range-label">写真サイズ</span><button className="btn-adjust" onClick={() => adjustScale(-0.01)}>−</button><input type="range" min="0.1" max="2.5" step="0.01" value={photoScale} onChange={e => setPhotoScale(parseFloat(e.target.value))} style={{ flex: 1 }} /><button className="btn-adjust" onClick={() => adjustScale(0.01)}>+</button><span className="range-label">{Math.round(photoScale * 100)}%</span></div><button className="btn-option" style={{ width: '100%', marginTop: '8px' }} onClick={() => document.getElementById('f').click()}>📷 写真を変更</button><input id="f" type="file" hidden onChange={e => { 
-                    const file = e.target.files[0];
-                    if (!file) return;
-                    const r = new FileReader(); 
-                    r.onload = ev => { 
-                        const dataUrl = ev.target.result;
-                        const img = new Image();
-                        img.onload = () => {
-                            const asp = img.width / img.height;
-                            let scale = 1.0;
-                            let baseW = 300;
-                            let baseH = 300;
-
-                            if (asp >= 1) {
-                                baseW = 300 * asp;
-                                baseH = 300;
-                                scale = 1.0;
-                            } else {
-                                baseW = 300;
-                                baseH = 300 / asp;
-                                scale = 1.0;
-                            }
-                            
-                            const x = (300 - baseW * scale) / 2;
-                            const y = (300 - baseH * scale) / 2;
-                            
-                            setPreviewImage(dataUrl);
-                            setPhotoPos({ x, y });
-                            setPhotoScale(scale);
-                        };
-                        img.src = dataUrl;
-                    }; 
-                    r.readAsDataURL(file); 
-                }} accept="image/*" /></div>
-
-                <button className="btn-main" onClick={download}>💾 背景透過PNGを保存</button>
-                <button className="btn-guide" onClick={() => setShowGuide(true)}>🖨️ ステッカーを実際に作る方法</button>
-
-                {showGuide && (
-                    <div className="modal-overlay" onClick={() => setShowGuide(false)}><div className="modal-sheet" onClick={e => e.stopPropagation()}><div className="modal-handle" /><div className="modal-title">🖨️ ステッカーを実際に作ろう</div><div className="guide-section"><h3>① コンビニで印刷（セブンイレブン）</h3><ol className="guide-steps">{['保存したPNGをスマホに用意', '「かんたんnetprint」をインストール', '画像を登録（ハガキサイズ推奨）', '予約番号をメモ', '店舗で印刷'].map((s, i) => (<li key={i}><span className="step-num">{i + 1}</span><span>{s}</span></li>))}</ol><div className="store-btns"><a className="store-btn store-btn-ios" href="https://apps.apple.com/jp/app/id1436423456" target="_blank" rel="noopener noreferrer">🍎 App Store</a><a className="store-btn store-btn-android" href="https://play.google.com/store/search?q=%E3%81%8B%E3%82%93%E3%81%9F%E3%82%93netprint" target="_blank" rel="noopener noreferrer">🤖 Google Play</a></div></div><div className="guide-section"><h3>② 印刷屋さんで作成</h3><p style={{fontSize:'0.85rem', color:'#475569', lineHeight:'1.6'}}>ラクスルやグラフィックがおすすめ。5cm角程度なら綺麗に仕上がります。</p></div><button className="modal-close" onClick={() => setShowGuide(false)}>閉じる</button></div></div>
-                )}<canvas ref={canvasRef} style={{ display: 'none' }} />
-
-                <div className="card premium-card">
-                    <span className="card-title" style={{ color: '#b8860b' }}>💎 プレミアムプラン（買い切り）</span>
-                    <p style={{ fontSize: '0.9rem', fontWeight: 800, margin: '4px 0 8px' }}>500円（税込）・追加料金なし</p>
-                    <ul className="premium-list">
-                        <li>✅ <b>超高画質保存</b>：3000px超で印刷がより綺麗に</li>
-                        <li>✅ <b>ロゴ非表示</b>：クレジットなしで使える</li>
-                        <li>✅ <b>限定フレーム</b>：特別なデザインが解放</li>
-                        <li>✅ <b>買い切り</b>：一度の支払いでずっと使える</li>
-                    </ul>
-                    <button className="btn-option" style={{ width: '100%', marginTop: '10px', background: '#ffd700', color: '#1a1a1a', borderColor: '#b8860b', fontWeight: 800 }} onClick={() => alert('現在Stripe審査中です。承認され次第、こちらから決済が可能になります。')}>💳 プレミアムにアップグレード</button>
-                </div>
-			    <footer className="legal-footer" style={{ padding: '40px 10px', textAlign: 'center' }}>
-    	    <a 
-        	    href="legal.html" 
-          	    target="_blank" 
-          	    rel="noopener noreferrer" 
-          	    style={{ color: '#94a3b8', textDecoration: 'underline', fontSize: '0.8rem' }}
-    	    >
-        特定商取引法に基づく表記
-    </a>
-    <p style={{ marginTop: '10px', fontSize: '0.8rem', color: '#94a3b8' }}>© 2026 とむ</p>
-</footer>
-
+    <!-- Customize -->
+    <div class="card">
+        <span class="card-title">② テキスト</span>
+        <input class="text-input" id="textInput" type="text" value="文字を入力" maxlength="15" oninput="redraw()" placeholder="名前を入力" />
+        <div class="ctrl-row">
+            <span class="ctrl-label">文字色</span>
+            <input type="color" id="textColor" value="#ffffff" oninput="redraw()" />
+        </div>
+        <div class="ctrl-row">
+            <span class="ctrl-label">サイズ</span>
+            <div class="font-size-row">
+                <button class="btn-fsize active" onclick="setFontSize(18,this)">S</button>
+                <button class="btn-fsize" onclick="setFontSize(24,this)">M</button>
+                <button class="btn-fsize" onclick="setFontSize(32,this)">L</button>
+                <button class="btn-fsize" onclick="setFontSize(42,this)">XL</button>
             </div>
+        </div>
+        <div class="ctrl-row">
+            <span class="ctrl-label">文字影</span>
+            <div class="font-size-row">
+                <button class="btn-fsize active" id="shadowOff" onclick="setShadow(false,this)">なし</button>
+                <button class="btn-fsize" id="shadowOn" onclick="setShadow(true,this)">あり</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Photo -->
+    <div class="card">
+        <span class="card-title">③ 写真・操作</span>
+
+        <div class="mode-toggle">
+            <button class="btn-mode active" id="modePhoto" onclick="setMode('photo',this)">📷 写真を動かす</button>
+            <button class="btn-mode" id="modeText" onclick="setMode('text',this)">✏️ 文字を動かす</button>
+        </div>
+
+        <div class="ctrl-row">
+            <span class="ctrl-label">写真サイズ</span>
+            <button class="btn-adj" onclick="adjustScale(-0.05)">−</button>
+            <input type="range" id="scaleRange" min="0.1" max="3" step="0.01" value="1" oninput="onScaleChange(this.value)" />
+            <button class="btn-adj" onclick="adjustScale(0.05)">+</button>
+            <span class="val-label" id="scaleVal">100%</span>
+        </div>
+
+        <div class="ctrl-row">
+            <span class="ctrl-label">背景色</span>
+            <input type="color" id="bgColor" value="#f1f5f9" oninput="redraw()" />
+            <span style="font-size:0.75rem;color:var(--muted)">（写真なし時）</span>
+        </div>
+
+        <button class="btn-photo" onclick="document.getElementById('fileInput').click()">📷 写真を選ぶ / 変更する</button>
+        <input id="fileInput" type="file" hidden accept="image/*" onchange="onFileChange(event)" />
+    </div>
+
+    <!-- Buttons -->
+    <button class="btn-save" onclick="downloadPNG()">💾 背景透過PNGを保存</button>
+    <button class="btn-guide" onclick="document.getElementById('guideModal').style.display='flex'">🖨️ ステッカーを実際に作る方法</button>
+
+    <!-- Premium -->
+    <div class="card premium-card">
+        <span class="card-title" style="color:#b45309">💎 プレミアムプラン（買い切り）</span>
+        <p style="font-size:0.9rem;font-weight:800;margin:4px 0 8px">500円（税込）・追加料金なし</p>
+        <ul class="premium-list">
+            <li>✅ <b>超高画質保存</b>：3000px超で印刷がより綺麗に</li>
+            <li>✅ <b>ロゴ非表示</b>：クレジットなしで使える</li>
+            <li>✅ <b>限定フレーム</b>：特別なデザインが解放</li>
+            <li>✅ <b>買い切り</b>：一度の支払いでずっと使える</li>
+        </ul>
+        <button class="btn-premium" onclick="alert('現在Stripe審査中です。承認され次第、こちらから決済が可能になります。')">💳 プレミアムにアップグレード</button>
+    </div>
+
+    <footer class="legal-footer">
+        <a href="legal.html" target="_blank" rel="noopener noreferrer">特定商取引法に基づく表記</a>
+        <p style="margin-top:8px">© 2026 とむ</p>
+    </footer>
+</div>
+
+<!-- Guide Modal -->
+<div id="guideModal" class="modal-overlay" style="display:none" onclick="document.getElementById('guideModal').style.display='none'">
+    <div class="modal-sheet" onclick="event.stopPropagation()">
+        <div class="modal-handle"></div>
+        <div class="modal-title">🖨️ ステッカーを実際に作ろう</div>
+        <div class="guide-section">
+            <h3>① コンビニで印刷（セブンイレブン）</h3>
+            <ol class="guide-steps">
+                <li><span class="step-num">1</span><span>保存したPNGをスマホに用意</span></li>
+                <li><span class="step-num">2</span><span>「かんたんnetprint」をインストール</span></li>
+                <li><span class="step-num">3</span><span>画像を登録（ハガキサイズ推奨）</span></li>
+                <li><span class="step-num">4</span><span>予約番号をメモ</span></li>
+                <li><span class="step-num">5</span><span>店舗で印刷</span></li>
+            </ol>
+            <div class="store-btns">
+                <a class="store-btn store-btn-ios" href="https://apps.apple.com/jp/app/id1436423456" target="_blank" rel="noopener noreferrer">🍎 App Store</a>
+                <a class="store-btn store-btn-android" href="https://play.google.com/store/search?q=%E3%81%8B%E3%82%93%E3%81%9F%E3%82%93netprint" target="_blank" rel="noopener noreferrer">🤖 Google Play</a>
+            </div>
+        </div>
+        <div class="guide-section">
+            <h3>② 印刷屋さんで作成</h3>
+            <p style="font-size:0.85rem;color:#475569;line-height:1.6">ラクスルやグラフィックがおすすめ。5cm角程度なら綺麗に仕上がります。</p>
+        </div>
+        <button class="modal-close" onclick="document.getElementById('guideModal').style.display='none'">閉じる</button>
+    </div>
+</div>
+
+<script>
+// ─── State ───────────────────────────────────────────────
+const STATE = {
+    shape: 'circle',
+    text: '文字を入力',
+    textColor: '#ffffff',
+    fontSize: 18,
+    textShadow: false,
+    photoImg: null,
+    photoPos: { x: 0, y: 0 },
+    photoScale: 1.0,
+    textPos: { x: 100, y: 230 },
+    bgColor: '#f1f5f9',
+    mode: 'photo', // 'photo' | 'text'
+};
+
+// ─── Canvas setup ─────────────────────────────────────────
+const canvas = document.getElementById('preview');
+const ctx = canvas.getContext('2d');
+const SIZE = 300;
+
+// Default placeholder image (SVG hex grid)
+const defaultSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
+  <rect width="300" height="300" fill="#f0eeff"/>
+  <g opacity="0.25">
+    ${Array.from({length:6},(_,r)=>Array.from({length:5},(_,c)=>{
+      const x=c*60+(r%2)*30, y=r*52;
+      return `<polygon points="${x+30},${y+0} ${x+60},${y+15} ${x+60},${y+45} ${x+30},${y+60} ${x+0},${y+45} ${x+0},${y+15}" fill="none" stroke="#6366f1" stroke-width="1.2"/>`;
+    }).join('')).join('')}
+  </g>
+  <text x="150" y="162" font-family="sans-serif" font-size="13" fill="#6366f1" text-anchor="middle" font-weight="700">📷 写真を選んでね</text>
+</svg>`;
+const defaultImg = new Image();
+defaultImg.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(defaultSvg);
+defaultImg.onload = () => {
+    STATE.photoImg = defaultImg;
+    redraw();
+};
+
+// ─── Shape clip functions ─────────────────────────────────
+function clipShape(c, s) {
+    const cx = s/2, cy = s/2;
+    c.beginPath();
+    if (STATE.shape === 'circle') {
+        c.arc(cx, cy, s*0.477, 0, Math.PI*2);
+    } else if (STATE.shape === 'square') {
+        const r = s * 0.12;
+        const m = s * 0.027;
+        roundRectPath(c, m, m, s-m*2, s-m*2, r);
+    } else if (STATE.shape === 'star') {
+        roundedStarPath(c, cx, cy, s*0.467, s*0.217, 5, s*0.06);
+    } else if (STATE.shape === 'heart') {
+        heartPath(c, cx, cy + s*0.04, s*0.593);
+    }
+    c.clip();
+}
+
+function roundRectPath(c, x, y, w, h, r) {
+    c.moveTo(x+r, y);
+    c.lineTo(x+w-r, y); c.arcTo(x+w, y, x+w, y+r, r);
+    c.lineTo(x+w, y+h-r); c.arcTo(x+w, y+h, x+w-r, y+h, r);
+    c.lineTo(x+r, y+h); c.arcTo(x, y+h, x, y+h-r, r);
+    c.lineTo(x, y+r); c.arcTo(x, y, x+r, y, r);
+    c.closePath();
+}
+
+function roundedStarPath(c, cx, cy, outerR, innerR, pts, cornerR) {
+    const PI2 = Math.PI*2; const step = PI2/pts; const half = step/2;
+    const verts = [];
+    for (let i=0; i<pts; i++) {
+        const oa = i*step - Math.PI/2; const ia = oa+half;
+        verts.push({x:cx+outerR*Math.cos(oa), y:cy+outerR*Math.sin(oa), outer:true});
+        verts.push({x:cx+innerR*Math.cos(ia), y:cy+innerR*Math.sin(ia), outer:false});
+    }
+    const n = verts.length;
+    for (let i=0; i<n; i++) {
+        const p=verts[(i-1+n)%n], v=verts[i], nx=verts[(i+1)%n];
+        const r=v.outer?cornerR:cornerR*0.5;
+        const dx1=v.x-p.x, dy1=v.y-p.y, l1=Math.hypot(dx1,dy1);
+        const dx2=nx.x-v.x, dy2=nx.y-v.y, l2=Math.hypot(dx2,dy2);
+        const t1=Math.min(r/l1,0.4), t2=Math.min(r/l2,0.4);
+        const p1x=v.x-dx1*t1, p1y=v.y-dy1*t1;
+        const p2x=v.x+dx2*t2, p2y=v.y+dy2*t2;
+        if (i===0) c.moveTo(p1x,p1y); else c.lineTo(p1x,p1y);
+        c.quadraticCurveTo(v.x,v.y,p2x,p2y);
+    }
+    c.closePath();
+}
+
+function heartPath(c, cx, cy, size) {
+    const s=size; const lx=cx-s*0.27, rx=cx+s*0.27; const ty=cy-s*0.18;
+    const r=s*0.37; const bx=cx, by=cy+s*0.52; const leftmost=lx-r;
+    const ltx=lx-r*0.3, lty=ty+r*0.95; const rtx=rx+r*0.3, rty=ty+r*0.95;
+    const rightmost=lx+(rx-lx)+r;
+    c.moveTo(cx,ty);
+    c.bezierCurveTo(cx-s*0.07,ty-s*0.22,leftmost,ty-s*0.38,leftmost,ty);
+    c.bezierCurveTo(leftmost,ty+r*0.75,ltx,lty,bx,by);
+    c.bezierCurveTo(rtx,rty,rightmost,ty+r*0.75,rightmost,ty);
+    c.bezierCurveTo(rightmost,ty-s*0.38,cx+s*0.07,ty-s*0.22,cx,ty);
+    c.closePath();
+}
+
+// ─── Core draw function ────────────────────────────────────
+function drawFrame(c, s, forExport=false) {
+    c.clearRect(0, 0, s, s);
+    const scale = s / SIZE;
+
+    // Fill background (for non-photo areas)
+    c.save();
+    c.fillStyle = STATE.bgColor;
+    c.fillRect(0, 0, s, s);
+
+    // Clip to shape
+    c.save();
+    if (s === SIZE) {
+        clipShape(c, SIZE);
+    } else {
+        // Scale up for export
+        c.scale(scale, scale);
+        clipShape(c, SIZE);
+        c.setTransform(scale, 0, 0, scale, 0, 0);
+    }
+
+    // Draw photo
+    if (STATE.photoImg) {
+        const img = STATE.photoImg;
+        const asp = img.width / img.height;
+        const bw = asp >= 1 ? SIZE * asp : SIZE;
+        const bh = asp >= 1 ? SIZE : SIZE / asp;
+        c.drawImage(
+            img,
+            STATE.photoPos.x * scale,
+            STATE.photoPos.y * scale,
+            bw * STATE.photoScale * scale,
+            bh * STATE.photoScale * scale
         );
     }
-    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+    c.restore(); // restore clip
+
+    // Draw text (outside clip so stroke is clean)
+    const txt = document.getElementById('textInput') ? document.getElementById('textInput').value : STATE.text;
+    if (txt) {
+        const fs = STATE.fontSize * scale;
+        c.font = `900 ${fs}px 'Outfit', sans-serif`;
+        c.textAlign = 'left';
+        c.textBaseline = 'top';
+        if (STATE.textShadow) {
+            c.strokeStyle = '#000';
+            c.lineWidth = fs * 0.18;
+            c.lineJoin = 'round';
+            c.strokeText(txt, STATE.textPos.x * scale, STATE.textPos.y * scale);
+        }
+        c.fillStyle = STATE.textColor;
+        c.fillText(txt, STATE.textPos.x * scale, STATE.textPos.y * scale);
+    }
+
+    // Watermark (free version)
+    if (!forExport) {
+        // no watermark on preview
+    } else {
+        c.font = `500 ${s * 0.025}px sans-serif`;
+        c.fillStyle = 'rgba(0,0,0,0.25)';
+        c.textAlign = 'center';
+        c.textBaseline = 'bottom';
+        c.fillText('Powered by Sticker Studio Free', s/2, s - s*0.015);
+    }
+
+    // Shape stroke border (overlay)
+    c.save();
+    c.strokeStyle = 'rgba(255,255,255,0.85)';
+    c.lineWidth = 5 * scale;
+    c.beginPath();
+    if (s === SIZE) {
+        drawShapeStroke(c, SIZE);
+    } else {
+        c.scale(scale, scale);
+        drawShapeStroke(c, SIZE);
+    }
+    c.stroke();
+    c.restore();
+
+    c.restore();
+}
+
+function drawShapeStroke(c, s) {
+    const cx=s/2, cy=s/2;
+    if (STATE.shape==='circle') {
+        c.arc(cx,cy,s*0.477,0,Math.PI*2);
+    } else if (STATE.shape==='square') {
+        const r=s*0.12, m=s*0.027;
+        roundRectPath(c,m,m,s-m*2,s-m*2,r);
+    } else if (STATE.shape==='star') {
+        roundedStarPath(c,cx,cy,s*0.467,s*0.217,5,s*0.06);
+    } else if (STATE.shape==='heart') {
+        heartPath(c,cx,cy+s*0.04,s*0.593);
+    }
+}
+
+function redraw() {
+    drawFrame(ctx, SIZE, false);
+}
+
+// ─── Controls ─────────────────────────────────────────────
+function setShape(s, btn) {
+    STATE.shape = s;
+    document.querySelectorAll('.btn-shape').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    redraw();
+}
+
+function setFontSize(n, btn) {
+    STATE.fontSize = n;
+    document.querySelectorAll('.btn-fsize').forEach(b => {
+        if (['S','M','L','XL'].some(x => b.textContent === x)) b.classList.remove('active');
+    });
+    btn.classList.add('active');
+    redraw();
+}
+
+function setShadow(val, btn) {
+    STATE.textShadow = val;
+    document.getElementById('shadowOff').classList.toggle('active', !val);
+    document.getElementById('shadowOn').classList.toggle('active', val);
+    redraw();
+}
+
+function setMode(m, btn) {
+    STATE.mode = m;
+    document.getElementById('modePhoto').classList.toggle('active', m==='photo');
+    document.getElementById('modeText').classList.toggle('active', m==='text');
+}
+
+function adjustScale(delta) {
+    const newScale = Math.max(0.1, Math.min(3, STATE.photoScale + delta));
+    STATE.photoScale = newScale;
+    document.getElementById('scaleRange').value = newScale;
+    document.getElementById('scaleVal').textContent = Math.round(newScale*100) + '%';
+    redraw();
+}
+
+function onScaleChange(val) {
+    STATE.photoScale = parseFloat(val);
+    document.getElementById('scaleVal').textContent = Math.round(val*100) + '%';
+    redraw();
+}
+
+// Live input listeners
+document.getElementById('textInput').addEventListener('input', () => {
+    STATE.text = document.getElementById('textInput').value;
+    redraw();
+});
+document.getElementById('textColor').addEventListener('input', e => {
+    STATE.textColor = e.target.value;
+    redraw();
+});
+document.getElementById('bgColor').addEventListener('input', e => {
+    STATE.bgColor = e.target.value;
+    redraw();
+});
+
+// ─── File load ────────────────────────────────────────────
+function onFileChange(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+        const img = new Image();
+        img.onload = () => {
+            const asp = img.width / img.height;
+            const bw = asp >= 1 ? SIZE * asp : SIZE;
+            const bh = asp >= 1 ? SIZE : SIZE / asp;
+            STATE.photoPos = { x: (SIZE - bw) / 2, y: (SIZE - bh) / 2 };
+            STATE.photoScale = 1.0;
+            document.getElementById('scaleRange').value = 1.0;
+            document.getElementById('scaleVal').textContent = '100%';
+            STATE.photoImg = img;
+            redraw();
+        };
+        img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+}
+
+// ─── Touch / Mouse drag ───────────────────────────────────
+let dragState = null;
+
+canvas.addEventListener('mousedown', onDragStart);
+canvas.addEventListener('touchstart', onDragStart, { passive: false });
+window.addEventListener('mousemove', onDragMove);
+window.addEventListener('touchmove', onDragMove, { passive: false });
+window.addEventListener('mouseup', onDragEnd);
+window.addEventListener('touchend', onDragEnd);
+
+function getPoint(e) {
+    return e.touches ? { x: e.touches[0].clientX, y: e.touches[0].clientY }
+                     : { x: e.clientX, y: e.clientY };
+}
+
+function onDragStart(e) {
+    if (e.cancelable) e.preventDefault();
+    const p = getPoint(e);
+    dragState = { last: p };
+}
+
+function onDragMove(e) {
+    if (!dragState) return;
+    if (e.cancelable) e.preventDefault();
+    const p = getPoint(e);
+    const dx = p.x - dragState.last.x;
+    const dy = p.y - dragState.last.y;
+    if (STATE.mode === 'photo') {
+        STATE.photoPos.x += dx;
+        STATE.photoPos.y += dy;
+    } else {
+        STATE.textPos.x += dx;
+        STATE.textPos.y += dy;
+    }
+    dragState.last = p;
+    redraw();
+}
+
+function onDragEnd() { dragState = null; }
+
+// ─── Export ───────────────────────────────────────────────
+function downloadPNG() {
+    const EXPORT = 1000;
+    const offCanvas = document.createElement('canvas');
+    offCanvas.width = EXPORT;
+    offCanvas.height = EXPORT;
+    const offCtx = offCanvas.getContext('2d');
+
+    // Same draw but scaled to EXPORT, with transparent bg inside shape
+    const scale = EXPORT / SIZE;
+    offCtx.clearRect(0, 0, EXPORT, EXPORT);
+
+    // Clip shape
+    offCtx.save();
+    offCtx.scale(scale, scale);
+    offCtx.beginPath();
+    drawShapeStroke(offCtx, SIZE); // reuse path function
+    // actually we need the full clip path
+    offCtx.restore();
+
+    offCtx.save();
+    offCtx.scale(scale, scale);
+    clipShape(offCtx, SIZE);
+
+    // Draw photo
+    if (STATE.photoImg) {
+        const img = STATE.photoImg;
+        const asp = img.width / img.height;
+        const bw = asp >= 1 ? SIZE * asp : SIZE;
+        const bh = asp >= 1 ? SIZE : SIZE / asp;
+        offCtx.drawImage(img,
+            STATE.photoPos.x, STATE.photoPos.y,
+            bw * STATE.photoScale, bh * STATE.photoScale
+        );
+    }
+    offCtx.restore();
+
+    // Text
+    const txt = document.getElementById('textInput').value;
+    if (txt) {
+        const fs = STATE.fontSize * scale;
+        offCtx.font = `900 ${fs}px 'Outfit', sans-serif`;
+        offCtx.textAlign = 'left';
+        offCtx.textBaseline = 'top';
+        if (STATE.textShadow) {
+            offCtx.strokeStyle = '#000';
+            offCtx.lineWidth = fs * 0.18;
+            offCtx.lineJoin = 'round';
+            offCtx.strokeText(txt, STATE.textPos.x * scale, STATE.textPos.y * scale);
+        }
+        offCtx.fillStyle = STATE.textColor;
+        offCtx.fillText(txt, STATE.textPos.x * scale, STATE.textPos.y * scale);
+    }
+
+    // Watermark
+    offCtx.font = `500 ${EXPORT * 0.024}px sans-serif`;
+    offCtx.fillStyle = 'rgba(0,0,0,0.22)';
+    offCtx.textAlign = 'center';
+    offCtx.textBaseline = 'bottom';
+    offCtx.fillText('Powered by Sticker Studio Free', EXPORT/2, EXPORT - EXPORT*0.013);
+
+    // Download
+    const a = document.createElement('a');
+    a.download = `sticker_${STATE.shape}.png`;
+    a.href = offCanvas.toDataURL('image/png');
+    a.click();
+}
 </script>
 </body>
 </html>
