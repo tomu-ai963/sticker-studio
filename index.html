@@ -436,7 +436,9 @@
             <li>✅ <b>限定フレーム</b>：特別なデザインが解放</li>
             <li>✅ <b>買い切り</b>：一度の支払いでずっと使える</li>
         </ul>
-        <button class="btn-premium" onclick="alert('現在Stripe審査中です。承認され次第、こちらから決済が可能になります。')">💳 プレミアムにアップグレード</button>
+        <div id="premiumBtn">
+            <button class="btn-premium" onclick="window.open('https://buy.stripe.com/5kQ3cu7jMe1Of9k9dp8Zq00','_blank')">💳 プレミアムにアップグレード（500円）</button>
+        </div>
     </div>
 
     <footer class="legal-footer">
@@ -473,6 +475,15 @@
 </div>
 
 <script>
+// ─── Premium 判定 ─────────────────────────────────────────
+(function() {
+    if (new URLSearchParams(location.search).get('success') === 'true') {
+        localStorage.setItem('sticker_premium', '1');
+        history.replaceState({}, '', location.pathname);
+    }
+})();
+const IS_PREMIUM = localStorage.getItem('sticker_premium') === '1';
+
 // ─── State ───────────────────────────────────────────────
 const STATE = {
     shape: 'circle',
@@ -626,10 +637,8 @@ function drawFrame(c, s, forExport=false) {
         c.fillText(txt, STATE.textPos.x * scale, STATE.textPos.y * scale);
     }
 
-    // Watermark (free version)
-    if (!forExport) {
-        // no watermark on preview
-    } else {
+    // Watermark (フリー版のみ)
+    if (forExport && !IS_PREMIUM) {
         c.font = `500 ${s * 0.025}px sans-serif`;
         c.fillStyle = 'rgba(0,0,0,0.25)';
         c.textAlign = 'center';
@@ -793,6 +802,16 @@ function onDragMove(e) {
 
 function onDragEnd() { dragState = null; }
 
+// ─── Premium UI 初期化 ────────────────────────────────────
+(function() {
+    if (IS_PREMIUM) {
+        const btn = document.getElementById('premiumBtn');
+        if (btn) {
+            btn.innerHTML = '<div style="background:#d1fae5;border:2px solid #10b981;border-radius:12px;padding:14px;text-align:center;font-weight:800;color:#065f46;font-size:0.95rem">✅ プレミアム購入済み・透かしなしで保存できます</div>';
+        }
+    }
+})();
+
 // ─── Export ───────────────────────────────────────────────
 function downloadPNG() {
     const EXPORT = 1000;
@@ -843,12 +862,14 @@ function downloadPNG() {
         offCtx.fillText(txt, STATE.textPos.x * scale, STATE.textPos.y * scale);
     }
 
-    // ウォーターマーク
-    offCtx.font = `500 ${EXPORT * 0.024}px sans-serif`;
-    offCtx.fillStyle = 'rgba(0,0,0,0.22)';
-    offCtx.textAlign = 'center';
-    offCtx.textBaseline = 'bottom';
-    offCtx.fillText('Powered by Sticker Studio Free', EXPORT/2, EXPORT - EXPORT*0.013);
+    // ウォーターマーク（フリー版のみ）
+    if (!IS_PREMIUM) {
+        offCtx.font = `500 ${EXPORT * 0.024}px sans-serif`;
+        offCtx.fillStyle = 'rgba(0,0,0,0.22)';
+        offCtx.textAlign = 'center';
+        offCtx.textBaseline = 'bottom';
+        offCtx.fillText('Powered by Sticker Studio Free', EXPORT/2, EXPORT - EXPORT*0.013);
+    }
 
     // ダウンロード
     const a = document.createElement('a');
