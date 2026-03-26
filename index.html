@@ -408,6 +408,9 @@
             <button class="btn-adj" onclick="adjustScale(0.05)">+</button>
             <span class="val-label" id="scaleVal">100%</span>
         </div>
+        <p style="font-size:0.75rem;color:var(--muted);margin:0 0 10px;line-height:1.6">
+            💡 写真を型より小さくすると、はみ出た部分が透明になります。あえてトリミングしてユニークな形を楽しむこともできます。
+        </p>
 
         <div class="ctrl-row">
             <span class="ctrl-label">背景色</span>
@@ -576,21 +579,19 @@ function drawFrame(c, s, forExport=false) {
     c.clearRect(0, 0, s, s);
     const scale = s / SIZE;
 
-    // Fill background (for non-photo areas)
-    c.save();
-    c.fillStyle = STATE.bgColor;
-    c.fillRect(0, 0, s, s);
-
-    // Clip to shape
+    // Clip to shape first
     c.save();
     if (s === SIZE) {
         clipShape(c, SIZE);
     } else {
-        // Scale up for export
         c.scale(scale, scale);
         clipShape(c, SIZE);
         c.setTransform(scale, 0, 0, scale, 0, 0);
     }
+
+    // Fill background INSIDE clip (写真が足りない部分のみ背景色)
+    c.fillStyle = STATE.bgColor;
+    c.fillRect(0, 0, s, s);
 
     // Draw photo
     if (STATE.photoImg) {
@@ -799,24 +800,20 @@ function downloadPNG() {
     offCanvas.width = EXPORT;
     offCanvas.height = EXPORT;
     const offCtx = offCanvas.getContext('2d');
-
-    // Same draw but scaled to EXPORT, with transparent bg inside shape
     const scale = EXPORT / SIZE;
+
     offCtx.clearRect(0, 0, EXPORT, EXPORT);
 
-    // Clip shape
-    offCtx.save();
-    offCtx.scale(scale, scale);
-    offCtx.beginPath();
-    drawShapeStroke(offCtx, SIZE); // reuse path function
-    // actually we need the full clip path
-    offCtx.restore();
-
+    // ── クリップ → 背景塗り → 写真（drawFrameと同じ順序）
     offCtx.save();
     offCtx.scale(scale, scale);
     clipShape(offCtx, SIZE);
 
-    // Draw photo
+    // 背景色をクリップ内に塗る
+    offCtx.fillStyle = STATE.bgColor;
+    offCtx.fillRect(0, 0, SIZE, SIZE);
+
+    // 写真
     if (STATE.photoImg) {
         const img = STATE.photoImg;
         const asp = img.width / img.height;
@@ -829,7 +826,7 @@ function downloadPNG() {
     }
     offCtx.restore();
 
-    // Text
+    // テキスト
     const txt = document.getElementById('textInput').value;
     if (txt) {
         const fs = STATE.fontSize * scale;
@@ -846,14 +843,14 @@ function downloadPNG() {
         offCtx.fillText(txt, STATE.textPos.x * scale, STATE.textPos.y * scale);
     }
 
-    // Watermark
+    // ウォーターマーク
     offCtx.font = `500 ${EXPORT * 0.024}px sans-serif`;
     offCtx.fillStyle = 'rgba(0,0,0,0.22)';
     offCtx.textAlign = 'center';
     offCtx.textBaseline = 'bottom';
     offCtx.fillText('Powered by Sticker Studio Free', EXPORT/2, EXPORT - EXPORT*0.013);
 
-    // Download
+    // ダウンロード
     const a = document.createElement('a');
     a.download = `sticker_${STATE.shape}.png`;
     a.href = offCanvas.toDataURL('image/png');
