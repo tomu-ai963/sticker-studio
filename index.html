@@ -1,882 +1,1737 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Sticker Studio</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #6366f1;
-            --primary-light: #ede9fe;
-            --bg: #f5f3ff;
-            --surface: #ffffff;
-            --border: #e0e7ff;
-            --text: #1e1b4b;
-            --muted: #6b7280;
-            --success: #10b981;
-            --gold: #f59e0b;
-        }
-        * { box-sizing: border-box; }
-        body {
-            margin: 0;
-            background: var(--bg);
-            font-family: 'Outfit', sans-serif;
-            color: var(--text);
-            overflow-x: hidden;
-            -webkit-tap-highlight-color: transparent;
-        }
-        .app-container {
-            max-width: 480px;
-            margin: 0 auto;
-            padding: 16px 16px 220px;
-        }
-        /* Header */
-        .header {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            margin-bottom: 18px;
-            padding-top: 8px;
-        }
-        .header h1 {
-            font-size: 1.5rem;
-            font-weight: 900;
-            margin: 0;
-            letter-spacing: -0.5px;
-            color: var(--text);
-        }
-        .header .badge {
-            font-size: 0.65rem;
-            font-weight: 700;
-            background: var(--primary);
-            color: #fff;
-            padding: 2px 8px;
-            border-radius: 99px;
-            letter-spacing: 0.5px;
-        }
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>Sticker Studio — Sacred Edition</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold: #c9a84c;
+  --gold-light: #f0d080;
+  --gold-dim: #7a5c1e;
+  --bg: #0a0a12;
+  --surface: #111122;
+  --surface2: #181830;
+  --border: #2a2a4a;
+  --border-gold: #3a3020;
+  --text: #e8e0d0;
+  --muted: #7a7090;
+  --sacred: #8b6fd4;
+  --sacred-light: #c4b0ff;
+  --success: #3ecf8e;
+  --danger: #e55;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  font-family: 'Outfit', sans-serif;
+  color: var(--text);
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+  min-height: 100vh;
+}
 
-        /* Canvas wrapper */
-        .canvas-wrap {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 16px;
-        }
-        #preview {
-            border-radius: 20px;
-            box-shadow: 0 12px 40px rgba(99,102,241,0.18);
-            touch-action: none;
-            cursor: grab;
-            display: block;
-        }
-        #preview:active { cursor: grabbing; }
+/* ── 幾何学背景 ──────────────────────── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 50% 20%, rgba(139,111,212,0.07) 0%, transparent 60%),
+    radial-gradient(circle at 80% 80%, rgba(201,168,76,0.05) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+.geo-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.04;
+}
 
-        /* Cards */
-        .card {
-            background: var(--surface);
-            border-radius: 18px;
-            padding: 16px;
-            margin-bottom: 14px;
-            border: 1.5px solid var(--border);
-            box-shadow: 0 2px 12px rgba(99,102,241,0.06);
-        }
-        .card-title {
-            font-size: 0.72rem;
-            font-weight: 800;
-            color: var(--primary);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 12px;
-            display: block;
-        }
+.app-container {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 16px 16px 220px;
+  position: relative;
+  z-index: 1;
+}
 
-        /* Shape buttons */
-        .shape-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 8px;
-        }
-        .btn-shape {
-            padding: 12px 4px;
-            border-radius: 12px;
-            border: 2px solid var(--border);
-            background: #fafafa;
-            cursor: pointer;
-            font-size: 0.82rem;
-            font-weight: 700;
-            color: var(--muted);
-            transition: all 0.15s;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-        }
-        .btn-shape .icon { font-size: 1.4rem; }
-        .btn-shape.active {
-            border-color: var(--primary);
-            background: var(--primary-light);
-            color: var(--primary);
-        }
+/* ── ヘッダー ─────────────────────────── */
+.header {
+  text-align: center;
+  padding: 24px 0 16px;
+}
+.header-symbol {
+  font-size: 2rem;
+  line-height: 1;
+  margin-bottom: 6px;
+  display: block;
+  filter: drop-shadow(0 0 12px rgba(201,168,76,0.5));
+  animation: glow-pulse 3s ease-in-out infinite;
+}
+@keyframes glow-pulse {
+  0%,100% { filter: drop-shadow(0 0 12px rgba(201,168,76,0.5)); }
+  50% { filter: drop-shadow(0 0 22px rgba(201,168,76,0.9)); }
+}
+.header h1 {
+  font-family: 'Cinzel', serif;
+  font-size: 1.4rem;
+  font-weight: 900;
+  letter-spacing: 2px;
+  color: var(--gold-light);
+  text-shadow: 0 0 20px rgba(201,168,76,0.3);
+}
+.header-sub {
+  font-size: 0.65rem;
+  letter-spacing: 3px;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+.plan-badge {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 3px 12px;
+  border-radius: 99px;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+.plan-badge.free { background: rgba(122,112,144,0.2); border: 1px solid var(--muted); color: var(--muted); }
+.plan-badge.pro { background: rgba(201,168,76,0.15); border: 1px solid var(--gold); color: var(--gold); }
+.plan-badge.creator { background: rgba(139,111,212,0.2); border: 1px solid var(--sacred); color: var(--sacred-light); }
 
-        /* Text input */
-        .text-input {
-            width: 100%;
-            padding: 13px 14px;
-            border-radius: 12px;
-            border: 1.5px solid var(--border);
-            font-family: 'Outfit', sans-serif;
-            font-size: 1rem;
-            font-weight: 700;
-            color: var(--text);
-            background: #fafafa;
-            outline: none;
-            margin-bottom: 12px;
-            transition: border-color 0.15s;
-        }
-        .text-input:focus { border-color: var(--primary); background: #fff; }
+/* ── キャンバス（スティッキー） ───────────────────────── */
+.canvas-wrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--bg);
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+.canvas-glow {
+  position: absolute;
+  inset: -20px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(139,111,212,0.12) 0%, transparent 70%);
+  pointer-events: none;
+}
+#preview {
+  border-radius: 20px;
+  box-shadow: 0 0 40px rgba(139,111,212,0.2), 0 0 80px rgba(201,168,76,0.08);
+  touch-action: none;
+  cursor: grab;
+  display: block;
+  border: 1px solid var(--border);
+}
+#preview:active { cursor: grabbing; }
 
-        /* Row controls */
-        .ctrl-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-        .ctrl-label {
-            font-size: 0.75rem;
-            font-weight: 700;
-            color: var(--muted);
-            min-width: 52px;
-        }
-        input[type="color"] {
-            height: 40px;
-            flex: 1;
-            border-radius: 10px;
-            border: none;
-            cursor: pointer;
-            padding: 2px;
-        }
-        input[type="range"] {
-            flex: 1;
-            cursor: pointer;
-            accent-color: var(--primary);
-        }
-        .val-label {
-            font-size: 0.75rem;
-            font-weight: 700;
-            color: var(--primary);
-            min-width: 36px;
-            text-align: right;
-        }
-        .btn-adj {
-            width: 36px;
-            height: 36px;
-            border-radius: 10px;
-            border: 1.5px solid var(--border);
-            background: #fafafa;
-            cursor: pointer;
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: var(--primary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-        .btn-adj:active { background: var(--primary-light); }
+/* ── カード ───────────────────────────── */
+.card {
+  background: var(--surface);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 12px;
+  border: 1px solid var(--border);
+}
+.card-gold {
+  border-color: var(--border-gold);
+  background: linear-gradient(135deg, var(--surface) 0%, rgba(201,168,76,0.04) 100%);
+}
+.card-sacred {
+  border-color: rgba(139,111,212,0.3);
+  background: linear-gradient(135deg, var(--surface) 0%, rgba(139,111,212,0.06) 100%);
+}
+.card-title {
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.card-title.gold { color: var(--gold); }
+.card-title.sacred { color: var(--sacred-light); }
+.card-title.muted { color: var(--muted); }
+.card-title .lock-icon { font-size: 0.75rem; opacity: 0.7; }
 
-        /* Font size select */
-        .font-size-row {
-            display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
-        }
-        .btn-fsize {
-            padding: 6px 12px;
-            border-radius: 8px;
-            border: 1.5px solid var(--border);
-            background: #fafafa;
-            cursor: pointer;
-            font-size: 0.8rem;
-            font-weight: 700;
-            color: var(--muted);
-        }
-        .btn-fsize.active {
-            border-color: var(--primary);
-            background: var(--primary-light);
-            color: var(--primary);
-        }
+/* ── 形状グリッド ─────────────────────── */
+.shape-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.btn-shape {
+  padding: 12px 4px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--muted);
+  transition: all 0.15s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-family: 'Outfit', sans-serif;
+}
+.btn-shape .icon { font-size: 1.3rem; }
+.btn-shape.active {
+  border-color: var(--gold);
+  background: rgba(201,168,76,0.08);
+  color: var(--gold-light);
+}
 
-        /* Photo button */
-        .btn-photo {
-            width: 100%;
-            padding: 13px;
-            border-radius: 12px;
-            border: 2px dashed var(--primary);
-            background: var(--primary-light);
-            color: var(--primary);
-            font-family: 'Outfit', sans-serif;
-            font-size: 0.9rem;
-            font-weight: 800;
-            cursor: pointer;
-            margin-top: 4px;
-        }
+/* ── テキスト入力 ─────────────────────── */
+.text-input {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  font-family: 'Outfit', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+  background: var(--surface2);
+  outline: none;
+  margin-bottom: 12px;
+  transition: border-color 0.15s;
+}
+.text-input:focus { border-color: var(--gold); }
+.text-input::placeholder { color: var(--muted); }
 
-        /* Bottom buttons */
-        .btn-save {
-            position: fixed;
-            bottom: 16px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: calc(100% - 32px);
-            max-width: 448px;
-            background: var(--success);
-            color: #fff;
-            font-family: 'Outfit', sans-serif;
-            font-size: 1.05rem;
-            font-weight: 800;
-            padding: 18px;
-            border: none;
-            border-radius: 16px;
-            cursor: pointer;
-            box-shadow: 0 8px 24px rgba(16,185,129,0.35);
-            z-index: 100;
-        }
-        .btn-guide {
-            position: fixed;
-            bottom: 86px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: calc(100% - 32px);
-            max-width: 448px;
-            background: #fff;
-            color: var(--primary);
-            font-family: 'Outfit', sans-serif;
-            font-size: 0.9rem;
-            font-weight: 800;
-            padding: 14px;
-            border: 2px solid var(--primary);
-            border-radius: 16px;
-            cursor: pointer;
-            z-index: 100;
-        }
+/* ── コントロール ─────────────────────── */
+.ctrl-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.ctrl-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--muted);
+  min-width: 72px;
+}
+input[type="color"] {
+  height: 38px;
+  flex: 1;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  padding: 2px;
+  background: var(--surface2);
+}
+input[type="range"] {
+  flex: 1;
+  cursor: pointer;
+  accent-color: var(--gold);
+}
+.val-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--gold);
+  min-width: 36px;
+  text-align: right;
+}
+.btn-adj {
+  width: 34px; height: 34px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--gold);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  font-family: 'Outfit', sans-serif;
+}
+.btn-adj:active { background: rgba(201,168,76,0.1); }
 
-        /* Modal */
-        .modal-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.45);
-            z-index: 200;
-            display: flex;
-            align-items: flex-end;
-            animation: fadeIn 0.2s ease;
-        }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .modal-sheet {
-            background: #fff;
-            width: 100%;
-            max-height: 88vh;
-            border-radius: 24px 24px 0 0;
-            overflow-y: auto;
-            padding: 24px 20px 40px;
-            animation: slideUp 0.25s ease;
-        }
-        @keyframes slideUp { from { transform: translateY(60px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        .modal-handle { width: 40px; height: 4px; background: #e2e8f0; border-radius: 2px; margin: 0 auto 20px; }
-        .modal-title { font-size: 1.1rem; font-weight: 900; text-align: center; margin-bottom: 20px; }
-        .guide-section { margin-bottom: 22px; }
-        .guide-section h3 { font-size: 0.9rem; font-weight: 800; color: var(--primary); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 2px solid var(--primary-light); }
-        .guide-steps { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
-        .guide-steps li { display: flex; gap: 10px; align-items: flex-start; font-size: 0.85rem; line-height: 1.5; color: #475569; }
-        .step-num { background: var(--primary); color: #fff; border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800; flex-shrink: 0; }
-        .store-btns { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
-        .store-btn { display: block; text-align: center; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 0.85rem; text-decoration: none; }
-        .store-btn-ios { background: #000; color: #fff; }
-        .store-btn-android { background: #16a34a; color: #fff; }
-        .modal-close { display: block; width: 100%; margin-top: 16px; padding: 14px; background: #f1f5f9; border: none; border-radius: 12px; font-weight: 800; font-size: 0.95rem; color: #64748b; cursor: pointer; font-family: 'Outfit', sans-serif; }
+/* ── モード切替 ───────────────────────── */
+.mode-toggle {
+  display: flex;
+  background: var(--surface2);
+  border-radius: 10px;
+  padding: 4px;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+.btn-mode {
+  flex: 1; padding: 9px;
+  border: none; border-radius: 7px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.78rem; font-weight: 700;
+  cursor: pointer;
+  background: transparent;
+  color: var(--muted);
+  transition: all 0.15s;
+}
+.btn-mode.active {
+  background: var(--surface);
+  color: var(--gold-light);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
 
-        /* Premium */
-        .premium-card { border: 2px solid #fcd34d; background: #fffbeb; }
-        .premium-list { list-style: none; padding: 0; margin: 10px 0; font-size: 0.83rem; line-height: 2; }
-        .premium-list li { display: flex; align-items: center; gap: 8px; }
-        .btn-premium { width: 100%; padding: 14px; margin-top: 10px; background: #f59e0b; border: none; border-radius: 12px; font-family: 'Outfit', sans-serif; font-size: 0.95rem; font-weight: 800; color: #1a1a1a; cursor: pointer; }
+/* ── 画像アップロード ─────────────────── */
+.btn-photo {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px dashed var(--gold-dim);
+  background: rgba(201,168,76,0.05);
+  color: var(--gold);
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 800;
+  cursor: pointer;
+  margin-top: 4px;
+  transition: all 0.15s;
+}
+.btn-photo:active { background: rgba(201,168,76,0.12); }
 
-        .legal-footer { font-size: 0.65rem; color: #94a3b8; text-align: center; padding: 30px 10px; border-top: 1px solid var(--border); margin-top: 6px; line-height: 1.8; }
-        .legal-footer a { color: #94a3b8; text-decoration: underline; }
+/* ── AIボタン ─────────────────────────── */
+.ai-input-wrap {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.ai-input {
+  flex: 1;
+  padding: 11px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(139,111,212,0.4);
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.9rem;
+  color: var(--text);
+  background: var(--surface2);
+  outline: none;
+  transition: border-color 0.15s;
+}
+.ai-input:focus { border-color: var(--sacred); }
+.ai-input::placeholder { color: var(--muted); }
+.btn-ai {
+  padding: 11px 16px;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(135deg, var(--sacred) 0%, #6040b8 100%);
+  color: #fff;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 800;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(139,111,212,0.3);
+  transition: all 0.15s;
+}
+.btn-ai:active { transform: scale(0.97); }
+.btn-ai:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.btn-ai-full {
+  width: 100%;
+  padding: 13px;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(135deg, var(--sacred) 0%, #6040b8 100%);
+  color: #fff;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(139,111,212,0.3);
+  transition: all 0.15s;
+  margin-bottom: 8px;
+}
+.btn-ai-full:active { transform: scale(0.98); }
+.btn-ai-full:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
-        /* Drag mode toggle */
-        .mode-toggle {
-            display: flex;
-            background: #f1f5f9;
-            border-radius: 12px;
-            padding: 4px;
-            gap: 4px;
-            margin-bottom: 12px;
-        }
-        .btn-mode {
-            flex: 1;
-            padding: 9px;
-            border: none;
-            border-radius: 9px;
-            font-family: 'Outfit', sans-serif;
-            font-size: 0.82rem;
-            font-weight: 700;
-            cursor: pointer;
-            background: transparent;
-            color: var(--muted);
-            transition: all 0.15s;
-        }
-        .btn-mode.active {
-            background: #fff;
-            color: var(--primary);
-            box-shadow: 0 2px 8px rgba(99,102,241,0.15);
-        }
-    </style>
+/* AIレスポンスチップ */
+.ai-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+.ai-chip {
+  padding: 7px 14px;
+  border-radius: 99px;
+  border: 1px solid rgba(139,111,212,0.4);
+  background: rgba(139,111,212,0.1);
+  color: var(--sacred-light);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.ai-chip:hover, .ai-chip:active {
+  background: rgba(139,111,212,0.25);
+  border-color: var(--sacred);
+}
+
+/* 神聖幾何学チップ */
+.sacred-chips {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-top: 10px;
+}
+.sacred-chip {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(201,168,76,0.25);
+  background: rgba(201,168,76,0.05);
+  color: var(--gold);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: center;
+  font-family: 'Outfit', sans-serif;
+}
+.sacred-chip:hover, .sacred-chip:active {
+  background: rgba(201,168,76,0.12);
+  border-color: var(--gold);
+}
+.sacred-chip.active {
+  border-color: var(--gold);
+  background: rgba(201,168,76,0.2);
+  color: var(--gold-light);
+}
+
+/* AIステータス */
+.ai-status {
+  font-size: 0.78rem;
+  color: var(--sacred-light);
+  padding: 8px 12px;
+  background: rgba(139,111,212,0.1);
+  border-radius: 8px;
+  margin-top: 8px;
+  display: none;
+  align-items: center;
+  gap: 8px;
+}
+.ai-status.show { display: flex; }
+.ai-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--sacred);
+  animation: pulse 1.2s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.8)} }
+
+/* ── ロックオーバーレイ ───────────────── */
+.locked-overlay {
+  border-radius: 10px;
+  border: 1px dashed rgba(139,111,212,0.3);
+  background: rgba(139,111,212,0.04);
+  padding: 14px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.locked-overlay .lock { font-size: 1.4rem; display: block; margin-bottom: 6px; }
+.locked-overlay span { color: var(--sacred-light); }
+
+/* ── SVGプレビュー ────────────────────── */
+.svg-preview-wrap {
+  margin-top: 10px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--border-gold);
+  display: none;
+}
+.svg-preview-wrap.show { display: block; }
+.svg-preview-wrap svg, .svg-preview-wrap img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* ── 固定ボタン ───────────────────────── */
+.btn-save {
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 32px);
+  max-width: 448px;
+  background: linear-gradient(135deg, #2a7a5a 0%, var(--success) 100%);
+  color: #fff;
+  font-family: 'Outfit', sans-serif;
+  font-size: 1rem;
+  font-weight: 800;
+  padding: 18px;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(62,207,142,0.25);
+  z-index: 100;
+  letter-spacing: 0.3px;
+}
+.btn-guide {
+  position: fixed;
+  bottom: 86px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 32px);
+  max-width: 448px;
+  background: var(--surface);
+  color: var(--gold);
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 800;
+  padding: 14px;
+  border: 1px solid var(--border-gold);
+  border-radius: 14px;
+  cursor: pointer;
+  z-index: 100;
+}
+
+/* ── プランカード ─────────────────────── */
+.plan-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.plan-card {
+  border-radius: 14px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+}
+.plan-card.pro-card {
+  border-color: rgba(201,168,76,0.4);
+  background: linear-gradient(135deg, var(--surface2), rgba(201,168,76,0.05));
+}
+.plan-card.creator-card {
+  border-color: rgba(139,111,212,0.4);
+  background: linear-gradient(135deg, var(--surface2), rgba(139,111,212,0.07));
+}
+.plan-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.plan-name {
+  font-family: 'Cinzel', serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+.plan-name.gold { color: var(--gold-light); }
+.plan-name.sacred { color: var(--sacred-light); }
+.plan-price {
+  font-size: 1rem;
+  font-weight: 900;
+  color: var(--text);
+}
+.plan-price span { font-size: 0.7rem; color: var(--muted); font-weight: 400; }
+.plan-features {
+  list-style: none;
+  font-size: 0.8rem;
+  line-height: 1.9;
+  color: var(--muted);
+}
+.plan-features li { display: flex; gap: 8px; align-items: flex-start; }
+.plan-features li b { color: var(--text); font-weight: 700; }
+.btn-plan {
+  width: 100%;
+  padding: 12px;
+  margin-top: 12px;
+  border-radius: 10px;
+  border: none;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-plan.gold {
+  background: linear-gradient(135deg, var(--gold-dim), var(--gold));
+  color: #0a0a12;
+  box-shadow: 0 4px 16px rgba(201,168,76,0.2);
+}
+.btn-plan.sacred {
+  background: linear-gradient(135deg, #5030a0, var(--sacred));
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(139,111,212,0.25);
+}
+.btn-plan:active { transform: scale(0.98); }
+
+/* ── モーダル ─────────────────────────── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 200;
+  display: flex;
+  align-items: flex-end;
+  animation: fadeIn 0.2s ease;
+}
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+.modal-sheet {
+  background: var(--surface);
+  width: 100%;
+  max-height: 88vh;
+  border-radius: 24px 24px 0 0;
+  overflow-y: auto;
+  padding: 24px 20px 40px;
+  animation: slideUp 0.25s ease;
+  border-top: 1px solid var(--border);
+}
+@keyframes slideUp { from{transform:translateY(60px);opacity:0} to{transform:translateY(0);opacity:1} }
+.modal-handle { width: 40px; height: 3px; background: var(--border); border-radius: 2px; margin: 0 auto 20px; }
+.modal-title { font-family: 'Cinzel', serif; font-size: 1rem; font-weight: 700; text-align: center; margin-bottom: 20px; color: var(--gold-light); }
+.guide-section { margin-bottom: 22px; }
+.guide-section h3 { font-size: 0.85rem; font-weight: 800; color: var(--gold); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border-gold); }
+.guide-steps { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.guide-steps li { display: flex; gap: 10px; align-items: flex-start; font-size: 0.82rem; line-height: 1.5; color: var(--muted); }
+.step-num { background: var(--gold-dim); color: var(--gold-light); border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800; flex-shrink: 0; }
+.store-btns { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
+.store-btn { display: block; text-align: center; padding: 11px; border-radius: 10px; font-weight: 800; font-size: 0.82rem; text-decoration: none; }
+.store-btn-ios { background: #1a1a2e; color: #fff; border: 1px solid var(--border); }
+.store-btn-android { background: rgba(62,207,142,0.1); color: var(--success); border: 1px solid rgba(62,207,142,0.3); }
+.modal-close { display: block; width: 100%; margin-top: 16px; padding: 13px; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; font-weight: 800; font-size: 0.9rem; color: var(--muted); cursor: pointer; font-family: 'Outfit', sans-serif; }
+
+/* ── APIキーモーダル ──────────────────── */
+.apikey-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.8);
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.apikey-sheet {
+  background: var(--surface);
+  border-radius: 20px;
+  padding: 28px 22px;
+  width: 100%;
+  max-width: 400px;
+  border: 1px solid rgba(139,111,212,0.4);
+}
+.apikey-sheet h2 {
+  font-family: 'Cinzel', serif;
+  font-size: 1rem;
+  color: var(--sacred-light);
+  margin-bottom: 8px;
+  text-align: center;
+}
+.apikey-sheet p {
+  font-size: 0.78rem;
+  color: var(--muted);
+  text-align: center;
+  margin-bottom: 18px;
+  line-height: 1.6;
+}
+.apikey-input {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(139,111,212,0.4);
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.85rem;
+  color: var(--text);
+  background: var(--surface2);
+  outline: none;
+  margin-bottom: 12px;
+}
+.apikey-input:focus { border-color: var(--sacred); }
+.btn-apikey-save {
+  width: 100%;
+  padding: 13px;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(135deg, var(--sacred), #6040b8);
+  color: #fff;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 800;
+  cursor: pointer;
+  margin-bottom: 8px;
+}
+.btn-apikey-skip {
+  width: 100%;
+  padding: 11px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* ── フッター ─────────────────────────── */
+.legal-footer {
+  font-size: 0.62rem;
+  color: #444466;
+  text-align: center;
+  padding: 28px 10px;
+  border-top: 1px solid var(--border);
+  margin-top: 6px;
+  line-height: 2;
+}
+.legal-footer a { color: #444466; text-decoration: underline; }
+</style>
 </head>
 <body>
+
+<div class="geo-bg" id="geoBg"></div>
+
 <div class="app-container">
-    <div class="header">
-        <h1>🎨 Sticker Studio</h1>
-        <span class="badge">FREE</span>
+
+  <!-- ヘッダー -->
+  <header class="header">
+    <span class="header-symbol">✧</span>
+    <h1>Sticker Studio</h1>
+    <div class="header-sub">Sacred Edition</div>
+    <div class="plan-badge free" id="planBadge">Free プラン</div>
+  </header>
+
+  <!-- キャンバス -->
+  <div class="canvas-wrap">
+    <div class="canvas-glow"></div>
+    <canvas id="preview" width="300" height="300"></canvas>
+  </div>
+
+  <!-- 1. ベースデザイン -->
+  <div class="card">
+    <div class="card-title muted">
+      <span>◎</span> ベースデザイン
     </div>
-
-    <!-- Canvas preview -->
-    <div class="canvas-wrap">
-        <canvas id="preview" width="300" height="300"></canvas>
+    <div class="shape-grid">
+      <button class="btn-shape active" onclick="setShape('circle', this)">
+        <span class="icon">○</span><span>円形</span>
+      </button>
+      <button class="btn-shape" onclick="setShape('square', this)">
+        <span class="icon">□</span><span>四角</span>
+      </button>
+      <button class="btn-shape" onclick="setShape('heart', this)">
+        <span class="icon">♥</span><span>ハート</span>
+      </button>
+      <button class="btn-shape" onclick="setShape('star', this)">
+        <span class="icon">★</span><span>スター</span>
+      </button>
     </div>
-
-    <!-- Shape -->
-    <div class="card">
-        <span class="card-title">① 形を選ぶ</span>
-        <div class="shape-grid">
-            <button class="btn-shape active" data-shape="circle" onclick="setShape('circle',this)">
-                <span class="icon">🔵</span>丸
-            </button>
-            <button class="btn-shape" data-shape="square" onclick="setShape('square',this)">
-                <span class="icon">🟦</span>四角
-            </button>
-            <button class="btn-shape" data-shape="star" onclick="setShape('star',this)">
-                <span class="icon">⭐</span>星
-            </button>
-            <button class="btn-shape" data-shape="heart" onclick="setShape('heart',this)">
-                <span class="icon">❤️</span>ハート
-            </button>
-        </div>
+    <div style="margin-top:16px;">
+      <div class="ctrl-row">
+        <span class="ctrl-label">背景色</span>
+        <input type="color" id="bgColor" value="#111122" oninput="updateBg(this.value)">
+      </div>
+      <div class="ctrl-row">
+        <span class="ctrl-label">文字色</span>
+        <input type="color" id="textColor" value="#c9a84c" oninput="updateTextColor(this.value)">
+      </div>
     </div>
+  </div>
 
-    <!-- Customize -->
-    <div class="card">
-        <span class="card-title">② テキスト</span>
-        <input class="text-input" id="textInput" type="text" value="文字を入力" maxlength="15" oninput="redraw()" placeholder="名前を入力" />
-        <div class="ctrl-row">
-            <span class="ctrl-label">文字色</span>
-            <input type="color" id="textColor" value="#ffffff" oninput="redraw()" />
-        </div>
-        <div class="ctrl-row">
-            <span class="ctrl-label">サイズ</span>
-            <div class="font-size-row">
-                <button class="btn-fsize active" onclick="setFontSize(18,this)">S</button>
-                <button class="btn-fsize" onclick="setFontSize(24,this)">M</button>
-                <button class="btn-fsize" onclick="setFontSize(32,this)">L</button>
-                <button class="btn-fsize" onclick="setFontSize(42,this)">XL</button>
-            </div>
-        </div>
-        <div class="ctrl-row">
-            <span class="ctrl-label">文字影</span>
-            <div class="font-size-row">
-                <button class="btn-fsize active" id="shadowOff" onclick="setShadow(false,this)">なし</button>
-                <button class="btn-fsize" id="shadowOn" onclick="setShadow(true,this)">あり</button>
-            </div>
-        </div>
+  <!-- 2. コンテンツ -->
+  <div class="card">
+    <div class="card-title muted">
+      <span>✎</span> コンテンツ
     </div>
-
-    <!-- Photo -->
-    <div class="card">
-        <span class="card-title">③ 写真・操作</span>
-
-        <div class="mode-toggle">
-            <button class="btn-mode active" id="modePhoto" onclick="setMode('photo',this)">📷 写真を動かす</button>
-            <button class="btn-mode" id="modeText" onclick="setMode('text',this)">✏️ 文字を動かす</button>
-        </div>
-
-        <div class="ctrl-row">
-            <span class="ctrl-label">写真サイズ</span>
-            <button class="btn-adj" onclick="adjustScale(-0.05)">−</button>
-            <input type="range" id="scaleRange" min="0.1" max="3" step="0.01" value="1" oninput="onScaleChange(this.value)" />
-            <button class="btn-adj" onclick="adjustScale(0.05)">+</button>
-            <span class="val-label" id="scaleVal">100%</span>
-        </div>
-        <p style="font-size:0.75rem;color:var(--muted);margin:0 0 10px;line-height:1.6">
-            💡 写真を型より小さくすると、はみ出た部分が透明になります。あえてトリミングしてユニークな形を楽しむこともできます。
-        </p>
-
-        <div class="ctrl-row">
-            <span class="ctrl-label">背景色</span>
-            <input type="color" id="bgColor" value="#f1f5f9" oninput="redraw()" />
-            <span style="font-size:0.75rem;color:var(--muted)">（写真なし時）</span>
-        </div>
-
-        <button class="btn-photo" onclick="document.getElementById('fileInput').click()">📷 写真を選ぶ / 変更する</button>
-        <input id="fileInput" type="file" hidden accept="image/*" onchange="onFileChange(event)" />
+    <input type="text" class="text-input" id="textInput" placeholder="テキストを入力..." oninput="updateText(this.value)">
+    <div id="dragHint" style="font-size:0.68rem;color:var(--muted);margin-bottom:10px;margin-top:-6px;">✦ 画像ドラッグ / 2本指タップでテキスト移動モード</div>
+    <div class="ctrl-row">
+      <span class="ctrl-label">フォントサイズ</span>
+      <button class="btn-adj" onclick="adjFontSize(-2)">−</button>
+      <div class="val-label" id="fontSizeVal">40</div>
+      <button class="btn-adj" onclick="adjFontSize(2)">+</button>
+      <div style="flex:1"></div>
+      <label style="font-size:0.7rem;color:var(--muted);display:flex;align-items:center;gap:5px;cursor:pointer;">
+        <input type="checkbox" id="textShadow" checked onchange="updateShadow(this.checked)"> 影
+      </label>
     </div>
-
-    <!-- Buttons -->
-    <button class="btn-save" onclick="downloadPNG()">💾 背景透過PNGを保存</button>
-    <button class="btn-guide" onclick="document.getElementById('guideModal').style.display='flex'">🖨️ ステッカーを実際に作る方法</button>
-
-    <!-- Premium -->
-    <div class="card premium-card">
-        <span class="card-title" style="color:#b45309">💎 プレミアムプラン（買い切り）</span>
-        <p style="font-size:0.9rem;font-weight:800;margin:4px 0 8px">500円（税込）・追加料金なし</p>
-        <ul class="premium-list">
-            <li>✅ <b>超高画質保存</b>：3000px超で印刷がより綺麗に</li>
-            <li>✅ <b>ロゴ非表示</b>：クレジットなしで使える</li>
-            <li>✅ <b>限定フレーム</b>：特別なデザインが解放</li>
-            <li>✅ <b>買い切り</b>：一度の支払いでずっと使える</li>
-        </ul>
-        <div id="premiumBtn">
-            <button class="btn-premium" onclick="window.open('https://buy.stripe.com/5kQ3cu7jMe1Of9k9dp8Zq00','_blank')">💳 プレミアムにアップグレード（500円）</button>
-        </div>
+    <div class="mode-toggle">
+      <button class="btn-mode active" id="modeColor" onclick="setMode('color')">カラーのみ</button>
+      <button class="btn-mode" id="modePhoto" onclick="setMode('photo')">画像 / SVG</button>
     </div>
+    <div id="photoArea" style="display:none;">
+      <button class="btn-photo" onclick="document.getElementById('fileInput').click()">+ 画像をアップロード</button>
+      <input type="file" id="fileInput" hidden accept="image/*" onchange="handleFile(this)">
+      <div class="ctrl-row" style="margin-top:12px;">
+        <span class="ctrl-label">サイズ</span>
+        <button class="btn-adj" onclick="adjScale(-0.1)">−</button>
+        <input type="range" id="scaleRange" min="0.1" max="3.0" step="0.05" value="1.0" oninput="updateScale(this.value)">
+        <button class="btn-adj" onclick="adjScale(0.1)">+</button>
+        <span class="val-label" id="scaleVal">100%</span>
+      </div>
+    </div>
+  </div>
 
-    <footer class="legal-footer">
-        <a href="legal.html" target="_blank" rel="noopener noreferrer">特定商取引法に基づく表記</a>
-        <p style="margin-top:8px">© 2026 とむ</p>
-    </footer>
+  <!-- 3. AIカラーコーチ (Pro) -->
+  <div class="card card-sacred">
+    <div class="card-title sacred">
+      <span>✦</span> AIカラーコーチ <span class="lock-icon" id="colorLockIcon">🔒</span>
+    </div>
+    <div id="colorAiArea">
+      <div class="locked-overlay" onclick="showGuide()">
+        <span class="lock">🔒</span>
+        <span>Proプラン</span>にアップグレードしてAI機能を解放
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. AIテキスト提案 (Pro) -->
+  <div class="card card-sacred">
+    <div class="card-title sacred">
+      <span>✦</span> AIテキスト提案 <span class="lock-icon" id="textLockIcon">🔒</span>
+    </div>
+    <div id="textAiArea">
+      <div class="locked-overlay" onclick="showGuide()">
+        <span class="lock">🔒</span>
+        <span>Proプラン</span>にアップグレードしてAI機能を解放
+      </div>
+    </div>
+    <div id="snsTextWrap" style="display:none;margin-top:12px;padding:12px;background:rgba(255,255,255,0.03);border-radius:10px;border:1px solid rgba(139,111,212,0.2);">
+      <div style="font-size:0.65rem;color:var(--sacred-light);margin-bottom:6px;font-weight:800;letter-spacing:1px;">SNSキャプション</div>
+      <div id="snsText" style="font-size:0.8rem;line-height:1.6;color:var(--text);"></div>
+    </div>
+  </div>
+
+  <!-- 5. 神聖幾何学 (Creator) -->
+  <div class="card card-gold">
+    <div class="card-title gold">
+      <span>✧</span> 神聖幾何学 <span class="lock-icon" id="sacredLockIcon">🔒</span>
+    </div>
+    <div id="sacredAiArea">
+      <div class="locked-overlay" onclick="showGuide()">
+        <span class="lock">🔒</span>
+        <span>Creatorプラン</span>で神聖幾何学を解放
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. AIコンセプト生成 (Creator) -->
+  <div class="card card-sacred">
+    <div class="card-title sacred">
+      <span>✦</span> AIコンセプト生成 <span class="lock-icon" id="conceptLockIcon">🔒</span>
+    </div>
+    <div id="conceptAiArea">
+      <div class="locked-overlay" onclick="showGuide()">
+        <span class="lock">🔒</span>
+        <span>Creatorプラン</span>でコンセプト生成を解放
+      </div>
+    </div>
+  </div>
+
+  <!-- フッター -->
+  <footer class="legal-footer">
+    &copy; 2026 Sticker Studio — Sacred Edition<br>
+    <a href="#">利用規約</a> &bull; <a href="#">プライバシーポリシー</a> &bull; <a href="#">商用ライセンス</a><br>
+    Powered by Claude API &amp; Sacred Geometry Engine
+  </footer>
+
+  <!-- 固定ボタン -->
+  <button class="btn-guide" onclick="showGuide()">✦ アップグレード &amp; ガイド</button>
+  <button class="btn-save" onclick="downloadPNG()">ステッカーをダウンロード (PNG)</button>
 </div>
 
-<!-- Guide Modal -->
-<div id="guideModal" class="modal-overlay" style="display:none" onclick="document.getElementById('guideModal').style.display='none'">
-    <div class="modal-sheet" onclick="event.stopPropagation()">
-        <div class="modal-handle"></div>
-        <div class="modal-title">🖨️ ステッカーを実際に作ろう</div>
-        <div class="guide-section">
-            <h3>① コンビニで印刷（セブンイレブン）</h3>
-            <ol class="guide-steps">
-                <li><span class="step-num">1</span><span>保存したPNGをスマホに用意</span></li>
-                <li><span class="step-num">2</span><span>「かんたんnetprint」をインストール</span></li>
-                <li><span class="step-num">3</span><span>画像を登録（ハガキサイズ推奨）</span></li>
-                <li><span class="step-num">4</span><span>予約番号をメモ</span></li>
-                <li><span class="step-num">5</span><span>店舗で印刷</span></li>
-            </ol>
-            <div class="store-btns">
-                <a class="store-btn store-btn-ios" href="https://apps.apple.com/jp/app/id1436423456" target="_blank" rel="noopener noreferrer">🍎 App Store</a>
-                <a class="store-btn store-btn-android" href="https://play.google.com/store/search?q=%E3%81%8B%E3%82%93%E3%81%9F%E3%82%93netprint" target="_blank" rel="noopener noreferrer">🤖 Google Play</a>
-            </div>
+<!-- アップグレード / ガイドモーダル -->
+<div class="modal-overlay" id="guideModal" style="display:none;" onclick="if(event.target===this) hideGuide()">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <h2 class="modal-title">プランをアップグレード</h2>
+
+    <div class="plan-cards">
+      <!-- Proプラン -->
+      <div class="plan-card pro-card" id="proPlanCard">
+        <div class="plan-header">
+          <div class="plan-name gold">PRO プラン</div>
+          <div class="plan-price">¥480<span>/月</span></div>
         </div>
-        <div class="guide-section">
-            <h3>② 印刷屋さんで作成</h3>
-            <p style="font-size:0.85rem;color:#475569;line-height:1.6">ラクスルやグラフィックがおすすめ。5cm角程度なら綺麗に仕上がります。</p>
+        <ul class="plan-features">
+          <li><b>✦ AIカラーコーチ</b> — 画像から配色を自動生成</li>
+          <li><b>✦ AIテキスト提案</b> — コピー文＆SNSキャプション生成</li>
+          <li><b>✓ 1000px 高解像度</b> — プロ品質の書き出し</li>
+          <li><b>✓ 広告なし</b> — 快適なクリエイティブ環境</li>
+        </ul>
+        <button class="btn-plan gold" onclick="subscribePlan('pro')">Proプランを始める</button>
+      </div>
+
+      <!-- Creatorプラン -->
+      <div class="plan-card creator-card" id="creatorPlanCard">
+        <div class="plan-header">
+          <div class="plan-name sacred">CREATOR プラン</div>
+          <div class="plan-price">¥1,280<span>/月</span></div>
         </div>
-        <button class="modal-close" onclick="document.getElementById('guideModal').style.display='none'">閉じる</button>
+        <ul class="plan-features">
+          <li><b>✧ 神聖幾何学</b> — 形而上学的SVGジェネレーター</li>
+          <li><b>✦ AIコンセプト生成</b> — キーワードから全デザイン生成</li>
+          <li><b>✓ 3000px 超高解像度</b> — 高品質印刷対応</li>
+          <li><b>✓ 商用ライセンス</b> — ステッカー販売可能</li>
+        </ul>
+        <button class="btn-plan sacred" onclick="subscribePlan('creator')">Creatorプランを始める</button>
+      </div>
     </div>
+
+    <div id="currentPlanInfo" style="display:none;text-align:center;padding:10px;background:rgba(255,255,255,0.05);border-radius:10px;margin-bottom:20px;font-size:0.8rem;color:var(--gold-light);"></div>
+
+    <div class="guide-section">
+      <h3>使い方</h3>
+      <ul class="guide-steps">
+        <li><span class="step-num">1</span><div><b>デザイン：</b>形・背景・テキストを選択</div></li>
+        <li><span class="step-num">2</span><div><b>AI補助：</b>AIカラーやテキストで仕上げ</div></li>
+        <li><span class="step-num">3</span><div><b>神聖幾何学：</b>（Creator）幾何学オーバーレイを生成</div></li>
+        <li><span class="step-num">4</span><div><b>保存：</b>ダウンロードしてInstagram / LINEで活用！</div></li>
+      </ul>
+    </div>
+
+    <div class="guide-section">
+      <h3>アプリをダウンロード</h3>
+      <div class="store-btns">
+        <a href="#" class="store-btn store-btn-ios">App Store でダウンロード</a>
+        <a href="#" class="store-btn store-btn-android">Google Play で入手</a>
+      </div>
+    </div>
+
+    <button class="modal-close" onclick="hideGuide()">閉じる</button>
+  </div>
+</div>
+
+<!-- APIキーモーダル -->
+<div class="apikey-modal" id="apikeyModal" style="display:none;">
+  <div class="apikey-sheet">
+    <h2>Sacred AI 接続</h2>
+    <p>AI機能（カラーコーチ等）を利用するには、Claude APIキーを入力してください。<br><span style="font-size:0.65rem;">※キーはブラウザにのみ保存されます。</span></p>
+    <input type="password" class="apikey-input" id="apiKeyInput" placeholder="sk-ant-api03-...">
+    <button class="btn-apikey-save" onclick="saveApiKey()">Sacred AIに接続</button>
+    <button class="btn-apikey-skip" onclick="document.getElementById('apikeyModal').style.display='none'">あとで</button>
+  </div>
 </div>
 
 <script>
-// ─── Premium 判定 ─────────────────────────────────────────
-(function() {
-    if (new URLSearchParams(location.search).get('success') === 'true') {
-        localStorage.setItem('sticker_premium', '1');
-        history.replaceState({}, '', location.pathname);
-    }
-})();
-const IS_PREMIUM = localStorage.getItem('sticker_premium') === '1';
+// ═══════════════════════════════════════
+// 設定 & 状態管理
+// ═══════════════════════════════════════
+const FRONTEND_URL = 'https://tomu-ai963.github.io/sticker-studio-sacred/';
+const BACKEND_URL = 'http://localhost:8000';
 
-// ─── State ───────────────────────────────────────────────
-const STATE = {
-    shape: 'circle',
-    text: '文字を入力',
-    textColor: '#ffffff',
-    fontSize: 18,
-    textShadow: false,
-    photoImg: null,
-    photoPos: { x: 0, y: 0 },
-    photoScale: 1.0,
-    textPos: { x: 100, y: 230 },
-    bgColor: '#f1f5f9',
-    mode: 'photo', // 'photo' | 'text'
-};
-
-// ─── Canvas setup ─────────────────────────────────────────
 const canvas = document.getElementById('preview');
 const ctx = canvas.getContext('2d');
 const SIZE = 300;
 
-// Default placeholder image (SVG hex grid)
-const defaultSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
-  <rect width="300" height="300" fill="#f0eeff"/>
-  <g opacity="0.25">
-    ${Array.from({length:6},(_,r)=>Array.from({length:5},(_,c)=>{
-      const x=c*60+(r%2)*30, y=r*52;
-      return `<polygon points="${x+30},${y+0} ${x+60},${y+15} ${x+60},${y+45} ${x+30},${y+60} ${x+0},${y+45} ${x+0},${y+15}" fill="none" stroke="#6366f1" stroke-width="1.2"/>`;
-    }).join('')).join('')}
-  </g>
-  <text x="150" y="162" font-family="sans-serif" font-size="13" fill="#6366f1" text-anchor="middle" font-weight="700">📷 写真を選んでね</text>
-</svg>`;
-const defaultImg = new Image();
-defaultImg.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(defaultSvg);
-defaultImg.onload = () => {
-    STATE.photoImg = defaultImg;
-    redraw();
+// URLパラメーターからプランを判定（テスト用）
+const urlParams = new URLSearchParams(window.location.search);
+const IS_PRO = urlParams.get('plan') === 'pro' || urlParams.get('plan') === 'creator';
+const IS_CREATOR = urlParams.get('plan') === 'creator';
+
+const STATE = {
+  shape: 'circle',
+  bgColor: '#111122',
+  textColor: '#c9a84c',
+  text: '',
+  fontSize: 40,
+  textPos: { x: 50, y: 130 },
+  textShadow: true,
+  mode: 'color',
+  photoImg: null,
+  photoScale: 1.0,
+  photoPos: { x: 0, y: 0 },
+  sacredSvg: null,
 };
 
-// ─── Shape clip functions ─────────────────────────────────
-function clipShape(c, s) {
-    const cx = s/2, cy = s/2;
-    c.beginPath();
-    if (STATE.shape === 'circle') {
-        c.arc(cx, cy, s*0.477, 0, Math.PI*2);
-    } else if (STATE.shape === 'square') {
-        const r = s * 0.12;
-        const m = s * 0.027;
-        roundRectPath(c, m, m, s-m*2, s-m*2, r);
-    } else if (STATE.shape === 'star') {
-        roundedStarPath(c, cx, cy, s*0.467, s*0.217, 5, s*0.06);
-    } else if (STATE.shape === 'heart') {
-        heartPath(c, cx, cy + s*0.04, s*0.593);
-    }
-    c.clip();
-}
-
-function roundRectPath(c, x, y, w, h, r) {
-    c.moveTo(x+r, y);
-    c.lineTo(x+w-r, y); c.arcTo(x+w, y, x+w, y+r, r);
-    c.lineTo(x+w, y+h-r); c.arcTo(x+w, y+h, x+w-r, y+h, r);
-    c.lineTo(x+r, y+h); c.arcTo(x, y+h, x, y+h-r, r);
-    c.lineTo(x, y+r); c.arcTo(x, y, x+r, y, r);
-    c.closePath();
-}
-
-function roundedStarPath(c, cx, cy, outerR, innerR, pts, cornerR) {
-    const PI2 = Math.PI*2; const step = PI2/pts; const half = step/2;
-    const verts = [];
-    for (let i=0; i<pts; i++) {
-        const oa = i*step - Math.PI/2; const ia = oa+half;
-        verts.push({x:cx+outerR*Math.cos(oa), y:cy+outerR*Math.sin(oa), outer:true});
-        verts.push({x:cx+innerR*Math.cos(ia), y:cy+innerR*Math.sin(ia), outer:false});
-    }
-    const n = verts.length;
-    for (let i=0; i<n; i++) {
-        const p=verts[(i-1+n)%n], v=verts[i], nx=verts[(i+1)%n];
-        const r=v.outer?cornerR:cornerR*0.5;
-        const dx1=v.x-p.x, dy1=v.y-p.y, l1=Math.hypot(dx1,dy1);
-        const dx2=nx.x-v.x, dy2=nx.y-v.y, l2=Math.hypot(dx2,dy2);
-        const t1=Math.min(r/l1,0.4), t2=Math.min(r/l2,0.4);
-        const p1x=v.x-dx1*t1, p1y=v.y-dy1*t1;
-        const p2x=v.x+dx2*t2, p2y=v.y+dy2*t2;
-        if (i===0) c.moveTo(p1x,p1y); else c.lineTo(p1x,p1y);
-        c.quadraticCurveTo(v.x,v.y,p2x,p2y);
-    }
-    c.closePath();
-}
-
-function heartPath(c, cx, cy, size) {
-    const s=size; const lx=cx-s*0.27, rx=cx+s*0.27; const ty=cy-s*0.18;
-    const r=s*0.37; const bx=cx, by=cy+s*0.52; const leftmost=lx-r;
-    const ltx=lx-r*0.3, lty=ty+r*0.95; const rtx=rx+r*0.3, rty=ty+r*0.95;
-    const rightmost=lx+(rx-lx)+r;
-    c.moveTo(cx,ty);
-    c.bezierCurveTo(cx-s*0.07,ty-s*0.22,leftmost,ty-s*0.38,leftmost,ty);
-    c.bezierCurveTo(leftmost,ty+r*0.75,ltx,lty,bx,by);
-    c.bezierCurveTo(rtx,rty,rightmost,ty+r*0.75,rightmost,ty);
-    c.bezierCurveTo(rightmost,ty-s*0.38,cx+s*0.07,ty-s*0.22,cx,ty);
-    c.closePath();
-}
-
-// ─── Core draw function ────────────────────────────────────
-function drawFrame(c, s, forExport=false) {
-    c.clearRect(0, 0, s, s);
-    const scale = s / SIZE;
-
-    // Clip to shape first
-    c.save();
-    if (s === SIZE) {
-        clipShape(c, SIZE);
-    } else {
-        c.scale(scale, scale);
-        clipShape(c, SIZE);
-        c.setTransform(scale, 0, 0, scale, 0, 0);
-    }
-
-    // Fill background INSIDE clip (写真が足りない部分のみ背景色)
-    c.fillStyle = STATE.bgColor;
-    c.fillRect(0, 0, s, s);
-
-    // Draw photo
-    if (STATE.photoImg) {
-        const img = STATE.photoImg;
-        const asp = img.width / img.height;
-        const bw = asp >= 1 ? SIZE * asp : SIZE;
-        const bh = asp >= 1 ? SIZE : SIZE / asp;
-        c.drawImage(
-            img,
-            STATE.photoPos.x * scale,
-            STATE.photoPos.y * scale,
-            bw * STATE.photoScale * scale,
-            bh * STATE.photoScale * scale
-        );
-    }
-    c.restore(); // restore clip
-
-    // Draw text (outside clip so stroke is clean)
-    const txt = document.getElementById('textInput') ? document.getElementById('textInput').value : STATE.text;
-    if (txt) {
-        const fs = STATE.fontSize * scale;
-        c.font = `900 ${fs}px 'Outfit', sans-serif`;
-        c.textAlign = 'left';
-        c.textBaseline = 'top';
-        if (STATE.textShadow) {
-            c.strokeStyle = '#000';
-            c.lineWidth = fs * 0.18;
-            c.lineJoin = 'round';
-            c.strokeText(txt, STATE.textPos.x * scale, STATE.textPos.y * scale);
-        }
-        c.fillStyle = STATE.textColor;
-        c.fillText(txt, STATE.textPos.x * scale, STATE.textPos.y * scale);
-    }
-
-    // Watermark (フリー版のみ)
-    if (forExport && !IS_PREMIUM) {
-        c.font = `500 ${s * 0.025}px sans-serif`;
-        c.fillStyle = 'rgba(0,0,0,0.25)';
-        c.textAlign = 'center';
-        c.textBaseline = 'bottom';
-        c.fillText('Powered by Sticker Studio Free', s/2, s - s*0.015);
-    }
-
-    // Shape stroke border (overlay)
-    c.save();
-    c.strokeStyle = 'rgba(255,255,255,0.85)';
-    c.lineWidth = 5 * scale;
-    c.beginPath();
-    if (s === SIZE) {
-        drawShapeStroke(c, SIZE);
-    } else {
-        c.scale(scale, scale);
-        drawShapeStroke(c, SIZE);
-    }
-    c.stroke();
-    c.restore();
-
-    c.restore();
-}
-
-function drawShapeStroke(c, s) {
-    const cx=s/2, cy=s/2;
-    if (STATE.shape==='circle') {
-        c.arc(cx,cy,s*0.477,0,Math.PI*2);
-    } else if (STATE.shape==='square') {
-        const r=s*0.12, m=s*0.027;
-        roundRectPath(c,m,m,s-m*2,s-m*2,r);
-    } else if (STATE.shape==='star') {
-        roundedStarPath(c,cx,cy,s*0.467,s*0.217,5,s*0.06);
-    } else if (STATE.shape==='heart') {
-        heartPath(c,cx,cy+s*0.04,s*0.593);
-    }
-}
-
+// ═══════════════════════════════════════
+// キャンバスエンジン
+// ═══════════════════════════════════════
 function redraw() {
-    drawFrame(ctx, SIZE, false);
+  ctx.clearRect(0, 0, SIZE, SIZE);
+  ctx.save();
+  clipShape(ctx, SIZE);
+  ctx.fillStyle = STATE.bgColor;
+  ctx.fillRect(0, 0, SIZE, SIZE);
+  if (STATE.photoImg) {
+    const img = STATE.photoImg;
+    const asp = img.width / img.height;
+    const bw = asp >= 1 ? SIZE * asp : SIZE;
+    const bh = asp >= 1 ? SIZE : SIZE / asp;
+    ctx.drawImage(img, STATE.photoPos.x, STATE.photoPos.y, bw * STATE.photoScale, bh * STATE.photoScale);
+  }
+  ctx.restore();
+  if (STATE.text) {
+    ctx.font = `900 ${STATE.fontSize}px 'Outfit', sans-serif`;
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'top';
+    if (STATE.textShadow) {
+      ctx.strokeStyle = '#000';
+      ctx.lineWidth = STATE.fontSize * 0.18;
+      ctx.lineJoin = 'round';
+      ctx.strokeText(STATE.text, STATE.textPos.x, STATE.textPos.y);
+    }
+    ctx.fillStyle = STATE.textColor;
+    ctx.fillText(STATE.text, STATE.textPos.x, STATE.textPos.y);
+  }
 }
 
-// ─── Controls ─────────────────────────────────────────────
-function setShape(s, btn) {
-    STATE.shape = s;
-    document.querySelectorAll('.btn-shape').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    redraw();
+function clipShape(c, s) {
+  c.beginPath();
+  if (STATE.shape === 'circle') {
+    c.arc(s/2, s/2, s/2 - 2, 0, Math.PI * 2);
+  } else if (STATE.shape === 'square') {
+    const r = 40;
+    c.moveTo(r, 0);
+    c.lineTo(s-r, 0); c.quadraticCurveTo(s, 0, s, r);
+    c.lineTo(s, s-r); c.quadraticCurveTo(s, s, s-r, s);
+    c.lineTo(r, s); c.quadraticCurveTo(0, s, 0, s-r);
+    c.lineTo(0, r); c.quadraticCurveTo(0, 0, r, 0);
+  } else if (STATE.shape === 'heart') {
+    const x=0, y=20, w=s, h=s-20;
+    c.moveTo(x+w/2, y+h*0.3);
+    c.bezierCurveTo(x+w/2, y, x, y, x, y+h*0.35);
+    c.bezierCurveTo(x, y+h*0.7, x+w/2, y+h, x+w/2, y+h);
+    c.bezierCurveTo(x+w/2, y+h, x+w, y+h*0.7, x+w, y+h*0.35);
+    c.bezierCurveTo(x+w, y, x+w/2, y, x+w/2, y+h*0.3);
+  } else if (STATE.shape === 'star') {
+    const cx=s/2, cy=s/2, spikes=5, outer=s/2-2, inner=s/4;
+    let rot = Math.PI/2*3;
+    const step = Math.PI/spikes;
+    c.moveTo(cx, cy - outer);
+    for (let i = 0; i < spikes; i++) {
+      c.lineTo(cx + Math.cos(rot)*outer, cy + Math.sin(rot)*outer); rot += step;
+      c.lineTo(cx + Math.cos(rot)*inner, cy + Math.sin(rot)*inner); rot += step;
+    }
+    c.lineTo(cx, cy - outer);
+  }
+  c.closePath();
+  c.clip();
 }
 
-function setFontSize(n, btn) {
-    STATE.fontSize = n;
-    document.querySelectorAll('.btn-fsize').forEach(b => {
-        if (['S','M','L','XL'].some(x => b.textContent === x)) b.classList.remove('active');
-    });
-    btn.classList.add('active');
-    redraw();
+// ═══════════════════════════════════════
+// UIハンドラ
+// ═══════════════════════════════════════
+function setShape(shape, btn) {
+  STATE.shape = shape;
+  document.querySelectorAll('.btn-shape').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  redraw();
+}
+function updateBg(v) { STATE.bgColor = v; redraw(); }
+function updateTextColor(v) { STATE.textColor = v; redraw(); }
+function updateText(v) { STATE.text = v; redraw(); }
+function adjFontSize(v) {
+  STATE.fontSize = Math.max(10, Math.min(120, STATE.fontSize + v));
+  document.getElementById('fontSizeVal').textContent = STATE.fontSize;
+  redraw();
+}
+function updateShadow(v) { STATE.textShadow = v; redraw(); }
+function setMode(m) {
+  STATE.mode = m;
+  document.getElementById('modeColor').classList.toggle('active', m === 'color');
+  document.getElementById('modePhoto').classList.toggle('active', m === 'photo');
+  document.getElementById('photoArea').style.display = m === 'photo' ? 'block' : 'none';
+  if (m === 'color') { STATE.photoImg = null; redraw(); }
+}
+function updateScale(v) {
+  STATE.photoScale = parseFloat(v);
+  document.getElementById('scaleVal').textContent = Math.round(v * 100) + '%';
+  redraw();
+}
+function adjScale(delta) {
+  const newVal = Math.max(0.1, Math.min(3.0, STATE.photoScale + delta));
+  STATE.photoScale = Math.round(newVal * 100) / 100;
+  document.getElementById('scaleRange').value = STATE.photoScale;
+  document.getElementById('scaleVal').textContent = Math.round(STATE.photoScale * 100) + '%';
+  redraw();
 }
 
-function setShadow(val, btn) {
-    STATE.textShadow = val;
-    document.getElementById('shadowOff').classList.toggle('active', !val);
-    document.getElementById('shadowOn').classList.toggle('active', val);
-    redraw();
-}
+// ── ドラッグ操作 ──
+let isDragging = false, lastPos = { x: 0, y: 0 };
+let textMoveMode = false;
 
-function setMode(m, btn) {
-    STATE.mode = m;
-    document.getElementById('modePhoto').classList.toggle('active', m==='photo');
-    document.getElementById('modeText').classList.toggle('active', m==='text');
-}
+canvas.onpointerdown = (e) => {
+  isDragging = true;
+  lastPos = { x: e.clientX, y: e.clientY };
+  canvas.setPointerCapture(e.pointerId);
+};
+canvas.onpointermove = (e) => {
+  if (!isDragging) return;
+  const dx = e.clientX - lastPos.x, dy = e.clientY - lastPos.y;
+  if (textMoveMode) {
+    STATE.textPos.x += dx; STATE.textPos.y += dy;
+  } else if (STATE.mode === 'photo' && STATE.photoImg) {
+    STATE.photoPos.x += dx; STATE.photoPos.y += dy;
+  } else {
+    STATE.textPos.x += dx; STATE.textPos.y += dy;
+  }
+  lastPos = { x: e.clientX, y: e.clientY };
+  redraw();
+};
+canvas.onpointerup = () => isDragging = false;
 
-function adjustScale(delta) {
-    const newScale = Math.max(0.1, Math.min(3, STATE.photoScale + delta));
-    STATE.photoScale = newScale;
-    document.getElementById('scaleRange').value = newScale;
-    document.getElementById('scaleVal').textContent = Math.round(newScale*100) + '%';
-    redraw();
-}
+canvas.addEventListener('touchstart', (e) => {
+  if (e.touches.length === 2) {
+    textMoveMode = !textMoveMode;
+    const hint = document.getElementById('dragHint');
+    if (hint) hint.textContent = textMoveMode
+      ? '✦ テキスト移動モード ON（2本指でOFF）'
+      : '✦ 画像ドラッグ / 2本指タップでテキスト移動モード';
+  }
+}, { passive: true });
 
-function onScaleChange(val) {
-    STATE.photoScale = parseFloat(val);
-    document.getElementById('scaleVal').textContent = Math.round(val*100) + '%';
-    redraw();
-}
-
-// Live input listeners
-document.getElementById('textInput').addEventListener('input', () => {
-    STATE.text = document.getElementById('textInput').value;
-    redraw();
-});
-document.getElementById('textColor').addEventListener('input', e => {
-    STATE.textColor = e.target.value;
-    redraw();
-});
-document.getElementById('bgColor').addEventListener('input', e => {
-    STATE.bgColor = e.target.value;
-    redraw();
-});
-
-// ─── File load ────────────────────────────────────────────
-function onFileChange(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = ev => {
-        const img = new Image();
-        img.onload = () => {
-            const asp = img.width / img.height;
-            const bw = asp >= 1 ? SIZE * asp : SIZE;
-            const bh = asp >= 1 ? SIZE : SIZE / asp;
-            STATE.photoPos = { x: (SIZE - bw) / 2, y: (SIZE - bh) / 2 };
-            STATE.photoScale = 1.0;
-            document.getElementById('scaleRange').value = 1.0;
-            document.getElementById('scaleVal').textContent = '100%';
-            STATE.photoImg = img;
-            redraw();
-        };
-        img.src = ev.target.result;
+// ── 画像アップロード ──
+function handleFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const img = new Image();
+    img.onload = () => {
+      STATE.photoImg = img;
+      STATE.photoPos = { x: 0, y: 0 };
+      STATE.photoScale = 1.0;
+      document.getElementById('scaleRange').value = 1.0;
+      document.getElementById('scaleVal').textContent = '100%';
+      redraw();
     };
-    reader.readAsDataURL(file);
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
 }
 
-// ─── Touch / Mouse drag ───────────────────────────────────
-let dragState = null;
-
-canvas.addEventListener('mousedown', onDragStart);
-canvas.addEventListener('touchstart', onDragStart, { passive: false });
-window.addEventListener('mousemove', onDragMove);
-window.addEventListener('touchmove', onDragMove, { passive: false });
-window.addEventListener('mouseup', onDragEnd);
-window.addEventListener('touchend', onDragEnd);
-
-function getPoint(e) {
-    return e.touches ? { x: e.touches[0].clientX, y: e.touches[0].clientY }
-                     : { x: e.clientX, y: e.clientY };
+// ═══════════════════════════════════════
+// APIキー管理
+// ═══════════════════════════════════════
+function getApiKey() { return localStorage.getItem('claude_api_key') || ''; }
+function saveApiKey() {
+  const key = document.getElementById('apiKeyInput').value.trim();
+  if (!key) return;
+  localStorage.setItem('claude_api_key', key);
+  document.getElementById('apikeyModal').style.display = 'none';
+  initAiFeatures();
 }
 
-function onDragStart(e) {
-    if (e.cancelable) e.preventDefault();
-    const p = getPoint(e);
-    dragState = { last: p };
+// ═══════════════════════════════════════
+// Claude API呼び出し
+// ═══════════════════════════════════════
+async function callClaude(system, user) {
+  const key = getApiKey();
+  if (!key) throw new Error('APIキーが設定されていません');
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': key,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
+    },
+    body: JSON.stringify({
+      model: 'claude-opus-4-5',
+      max_tokens: 2000,
+      system,
+      messages: [{ role: 'user', content: user }],
+    }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error?.message || `APIエラー: ${res.status}`);
+  }
+  const data = await res.json();
+  return data.content[0].text;
 }
 
-function onDragMove(e) {
-    if (!dragState) return;
-    if (e.cancelable) e.preventDefault();
-    const p = getPoint(e);
-    const dx = p.x - dragState.last.x;
-    const dy = p.y - dragState.last.y;
-    if (STATE.mode === 'photo') {
-        STATE.photoPos.x += dx;
-        STATE.photoPos.y += dy;
+// ═══════════════════════════════════════
+// ステータス表示
+// ═══════════════════════════════════════
+function showStatus(id, msg) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.querySelector('span').textContent = msg;
+  el.classList.add('show');
+}
+function hideStatus(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.remove('show');
+}
+
+// ═══════════════════════════════════════
+// AI機能初期化
+// ═══════════════════════════════════════
+function initAiFeatures() {
+  if (IS_PRO) {
+    initColorCoach();
+    initTextProposer();
+  }
+  if (IS_CREATOR) {
+    initSacredGeometry();
+    initConceptGenerator();
+  }
+}
+
+// ── AIカラーコーチ (Pro) ──
+function initColorCoach() {
+  document.getElementById('colorLockIcon').style.display = 'none';
+  document.getElementById('colorAiArea').innerHTML = `
+    <div class="ai-input-wrap">
+      <input class="ai-input" id="colorKeyword" placeholder="例：夕焼け・海・ネオン・和風">
+      <button class="btn-ai" onclick="runColorCoach()">✦ 配色提案</button>
+    </div>
+    <div class="ai-status" id="colorStatus"><div class="ai-dot"></div><span>AIが配色を考えています...</span></div>
+    <div class="ai-chips" id="colorChips"></div>
+  `;
+}
+
+async function runColorCoach() {
+  const kw = document.getElementById('colorKeyword').value.trim();
+  if (!kw) return;
+  showStatus('colorStatus', 'AIが配色を考えています...');
+  try {
+    const raw = await callClaude(
+      `あなたはカラーデザインの専門家です。キーワードに合う配色を3案提案してください。
+必ずJSONのみで返してください。形式：
+{"palettes":[{"name":"名前","bg":"#hex","text":"#hex","desc":"一言説明"},{"name":"...","bg":"...","text":"...","desc":"..."},{"name":"...","bg":"...","text":"...","desc":"..."}]}`,
+      `キーワード：${kw}`
+    );
+    const data = JSON.parse(raw.replace(/```json|```/g, '').trim());
+    const chips = document.getElementById('colorChips');
+    chips.innerHTML = '';
+    data.palettes.forEach(p => {
+      const chip = document.createElement('button');
+      chip.className = 'ai-chip';
+      chip.style.cssText = `background:${p.bg};color:${p.text};border-color:${p.text}44;display:block;width:100%;text-align:left;padding:10px 14px;border-radius:10px;margin-bottom:4px;`;
+      chip.innerHTML = `<b>${p.name}</b><br><span style="font-size:0.75rem;opacity:0.8">${p.desc}</span>`;
+      chip.onclick = () => {
+        STATE.bgColor = p.bg; STATE.textColor = p.text;
+        document.getElementById('bgColor').value = p.bg;
+        document.getElementById('textColor').value = p.text;
+        redraw();
+      };
+      chips.appendChild(chip);
+    });
+  } catch(e) {
+    showStatus('colorStatus', '⚠ ' + e.message);
+    setTimeout(() => hideStatus('colorStatus'), 3000); return;
+  }
+  hideStatus('colorStatus');
+}
+
+// ── AIテキスト提案 (Pro) ──
+function initTextProposer() {
+  document.getElementById('textLockIcon').style.display = 'none';
+  document.getElementById('textAiArea').innerHTML = `
+    <div class="ai-input-wrap">
+      <input class="ai-input" id="textKeyword" placeholder="例：推し活・誕生日・カフェ・旅行">
+      <button class="btn-ai" onclick="runTextProposer()">✦ テキスト提案</button>
+    </div>
+    <div class="ai-status" id="textStatus"><div class="ai-dot"></div><span>AIがテキストを考えています...</span></div>
+    <div class="ai-chips" id="textChips"></div>
+  `;
+}
+
+async function runTextProposer() {
+  const kw = document.getElementById('textKeyword').value.trim();
+  if (!kw) return;
+  const btn = document.querySelector('#textAiArea .btn-ai');
+  btn.disabled = true;
+  showStatus('textStatus', 'AIがテキストを考えています...');
+  try {
+    const raw = await callClaude(
+      `あなたはステッカーコピーライターです。シーンに合う短いテキストを5案提案してください。
+必ずJSONのみで返してください。形式：{"texts":["テキスト1","テキスト2","テキスト3","テキスト4","テキスト5"]}
+各テキストは12文字以内で。`,
+      `シーン：${kw}`
+    );
+    const data = JSON.parse(raw.replace(/```json|```/g, '').trim());
+    const chips = document.getElementById('textChips');
+    chips.innerHTML = '';
+    data.texts.forEach(t => {
+      const chip = document.createElement('button');
+      chip.className = 'ai-chip';
+      chip.textContent = t;
+      chip.onclick = () => {
+        STATE.text = t;
+        document.getElementById('textInput').value = t;
+        redraw();
+      };
+      chips.appendChild(chip);
+    });
+    // SNSキャプション生成
+    const snsRaw = await callClaude(
+      'ステッカーのSNSキャプションを1つ、日本語で100文字以内で生成してください。ハッシュタグも含めてください。テキストのみ返してください。',
+      `シーン：${kw}`
+    );
+    document.getElementById('snsText').textContent = snsRaw.trim();
+    document.getElementById('snsTextWrap').style.display = 'block';
+  } catch(e) {
+    showStatus('textStatus', '⚠ ' + e.message);
+    setTimeout(() => hideStatus('textStatus'), 3000);
+    btn.disabled = false; return;
+  }
+  hideStatus('textStatus');
+  btn.disabled = false;
+}
+
+// ═══════════════════════════════════════
+// 神聖幾何学 — オフラインSVGジェネレーター
+// ═══════════════════════════════════════
+const SACRED_SVG_GENERATORS = {
+
+  flower_of_life: () => {
+    const cx = 150, cy = 150, r = 36;
+    const centers = [[cx, cy]];
+    for (let i = 0; i < 6; i++) {
+      const a = (Math.PI / 3) * i;
+      centers.push([cx + r * Math.cos(a), cy + r * Math.sin(a)]);
+    }
+    for (let i = 0; i < 6; i++) {
+      const a = (Math.PI / 3) * i;
+      centers.push([cx + r * 2 * Math.cos(a), cy + r * 2 * Math.sin(a)]);
+      const a2 = (Math.PI / 3) * i + Math.PI / 6;
+      const d = r * Math.sqrt(3);
+      centers.push([cx + d * Math.cos(a2), cy + d * Math.sin(a2)]);
+    }
+    const circles = centers.map(([x, y]) =>
+      `<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="${r}" fill="none" stroke="#c9a84c" stroke-width="0.8" opacity="0.85"/>`
+    ).join('\n');
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
+  <defs><clipPath id="outerClip"><circle cx="150" cy="150" r="${(r*3.05).toFixed(2)}"/></clipPath></defs>
+  <rect width="300" height="300" fill="#0a0a12"/>
+  <g clip-path="url(#outerClip)">${circles}</g>
+  <circle cx="150" cy="150" r="${(r*3.05).toFixed(2)}" fill="none" stroke="#c9a84c" stroke-width="1.5"/>
+</svg>`;
+  },
+
+  metatrons_cube: () => {
+    const cx = 150, cy = 150, r = 50;
+    const pts = [[cx, cy]];
+    for (let i = 0; i < 6; i++) {
+      const a = (Math.PI/3)*i - Math.PI/6;
+      pts.push([cx + r*Math.cos(a), cy + r*Math.sin(a)]);
+    }
+    for (let i = 0; i < 6; i++) {
+      const a = (Math.PI/3)*i - Math.PI/6;
+      pts.push([cx + r*2*Math.cos(a), cy + r*2*Math.sin(a)]);
+    }
+    let lines = '';
+    for (let i = 0; i < pts.length; i++)
+      for (let j = i+1; j < pts.length; j++)
+        lines += `<line x1="${pts[i][0].toFixed(1)}" y1="${pts[i][1].toFixed(1)}" x2="${pts[j][0].toFixed(1)}" y2="${pts[j][1].toFixed(1)}" stroke="#c9a84c" stroke-width="0.6" opacity="0.6"/>\n`;
+    const circles = pts.map(([x,y]) =>
+      `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r}" fill="none" stroke="#f0d080" stroke-width="0.8" opacity="0.5"/>`
+    ).join('\n');
+    const dots = pts.map(([x,y]) =>
+      `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2" fill="#c9a84c" opacity="0.9"/>`
+    ).join('\n');
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
+  <rect width="300" height="300" fill="#0a0a12"/>
+  ${lines}${circles}${dots}
+</svg>`;
+  },
+
+  golden_spiral: () => {
+    const phi = (1 + Math.sqrt(5)) / 2;
+    let sx = 40, sy = 60, sw = 220, sh = Math.round(220 / phi);
+    const colors = ['#c9a84c','#f0d080','#c9a84c','#f0d080','#c9a84c','#f0d080','#c9a84c'];
+    let rects = [], arcPath = '';
+    for (let i = 0; i < 7; i++) {
+      const sq = Math.min(sw, sh);
+      const dir = i % 4;
+      let arcX, arcY, startA, endA;
+      if (dir === 0) {
+        arcX = sx + sq; arcY = sy + sq; startA = Math.PI; endA = Math.PI*1.5;
+        rects.push({x:sx, y:sy, w:sq, h:sq, c:colors[i]});
+        sw -= sq; sx += sq;
+      } else if (dir === 1) {
+        arcX = sx; arcY = sy; startA = Math.PI*0.5; endA = Math.PI;
+        rects.push({x:sx, y:sy, w:sq, h:sq, c:colors[i]});
+        sh -= sq; sy += sq;
+      } else if (dir === 2) {
+        arcX = sx+sw-sq; arcY = sy; startA = 0; endA = Math.PI*0.5;
+        rects.push({x:sx+sw-sq, y:sy, w:sq, h:sq, c:colors[i]});
+        sw -= sq;
+      } else {
+        arcX = sx+sw; arcY = sy+sh-sq; startA = Math.PI*1.5; endA = Math.PI*2;
+        rects.push({x:sx, y:sy+sh-sq, w:sq, h:sq, c:colors[i]});
+        sh -= sq;
+      }
+      const ex = arcX + sq*Math.cos(endA), ey = arcY + sq*Math.sin(endA);
+      const stX = arcX + sq*Math.cos(startA), stY = arcY + sq*Math.sin(startA);
+      arcPath += (i===0 ? `M ${stX.toFixed(1)} ${stY.toFixed(1)} ` : '') +
+        `A ${sq.toFixed(1)} ${sq.toFixed(1)} 0 0 1 ${ex.toFixed(1)} ${ey.toFixed(1)} `;
+    }
+    const rectsSvg = rects.map(r =>
+      `<rect x="${r.x.toFixed(1)}" y="${r.y.toFixed(1)}" width="${r.w.toFixed(1)}" height="${r.h.toFixed(1)}" fill="none" stroke="${r.c}" stroke-width="0.7" opacity="0.4"/>`
+    ).join('\n');
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
+  <rect width="300" height="300" fill="#0a0a12"/>
+  ${rectsSvg}
+  <path d="${arcPath}" fill="none" stroke="#f0d080" stroke-width="2.5" stroke-linecap="round"/>
+  <text x="260" y="285" font-size="11" fill="#c9a84c" opacity="0.6" font-family="serif">φ=1.618</text>
+</svg>`;
+  },
+
+  pentagram: () => {
+    const cx = 150, cy = 148, r = 115, ri = r * 0.382;
+    const pts5 = Array.from({length:5}, (_,i) => {
+      const a = (Math.PI*2/5)*i - Math.PI/2;
+      return [cx + r*Math.cos(a), cy + r*Math.sin(a)];
+    });
+    const inner5 = Array.from({length:5}, (_,i) => {
+      const a = (Math.PI*2/5)*i - Math.PI/2 + Math.PI/5;
+      return [cx + ri*Math.cos(a), cy + ri*Math.sin(a)];
+    });
+    const starPts = [0,2,4,1,3].map(i => pts5[i]);
+    const starD = starPts.map((p,i) => `${i===0?'M':'L'}${p[0].toFixed(2)},${p[1].toFixed(2)}`).join(' ') + ' Z';
+    const outerD = pts5.map((p,i) => `${i===0?'M':'L'}${p[0].toFixed(2)},${p[1].toFixed(2)}`).join(' ') + ' Z';
+    const innerD = inner5.map((p,i) => `${i===0?'M':'L'}${p[0].toFixed(2)},${p[1].toFixed(2)}`).join(' ') + ' Z';
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
+  <rect width="300" height="300" fill="#0a0a12"/>
+  <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#c9a84c" stroke-width="1"/>
+  <circle cx="${cx}" cy="${cy}" r="${ri}" fill="none" stroke="#c9a84c" stroke-width="0.8" opacity="0.5"/>
+  <path d="${outerD}" fill="none" stroke="#c9a84c" stroke-width="0.6" opacity="0.4"/>
+  <path d="${starD}" fill="rgba(201,168,76,0.07)" stroke="#f0d080" stroke-width="1.8" stroke-linejoin="round"/>
+  <path d="${innerD}" fill="rgba(201,168,76,0.12)" stroke="#c9a84c" stroke-width="1" opacity="0.7"/>
+</svg>`;
+  },
+
+  vesica_piscis: () => {
+    const r = 90, cx = 150, cy = 150, d = r;
+    const c1x = cx - d/2, c2x = cx + d/2;
+    const iy = Math.sqrt(r*r - (d/2)*(d/2));
+    const top = [cx, cy - iy], bot = [cx, cy + iy];
+    const vesicaPath = `M ${top[0].toFixed(2)},${top[1].toFixed(2)} A ${r} ${r} 0 0 1 ${bot[0].toFixed(2)},${bot[1].toFixed(2)} A ${r} ${r} 0 0 1 ${top[0].toFixed(2)},${top[1].toFixed(2)} Z`;
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
+  <rect width="300" height="300" fill="#0a0a12"/>
+  <circle cx="${c1x}" cy="${cy}" r="${r}" fill="none" stroke="#c9a84c" stroke-width="1.2" opacity="0.7"/>
+  <circle cx="${c2x}" cy="${cy}" r="${r}" fill="none" stroke="#c9a84c" stroke-width="1.2" opacity="0.7"/>
+  <path d="${vesicaPath}" fill="rgba(201,168,76,0.10)" stroke="#f0d080" stroke-width="1.8"/>
+  <line x1="${c1x}" y1="${cy}" x2="${c2x}" y2="${cy}" stroke="#c9a84c" stroke-width="0.6" opacity="0.4"/>
+  <line x1="${top[0]}" y1="${top[1]}" x2="${bot[0]}" y2="${bot[1]}" stroke="#c9a84c" stroke-width="0.6" opacity="0.4"/>
+  <circle cx="${c1x}" cy="${cy}" r="2.5" fill="#c9a84c"/>
+  <circle cx="${c2x}" cy="${cy}" r="2.5" fill="#c9a84c"/>
+  <text x="150" y="285" text-anchor="middle" font-size="10" fill="#c9a84c" opacity="0.5" font-family="serif">w : h = 1 : √3</text>
+</svg>`;
+  },
+
+  sri_yantra: () => {
+    const cx = 150, cy = 150;
+    const upTri = [
+      [[150,42],[58,218],[242,218]],
+      [[150,68],[72,200],[228,200]],
+      [[150,96],[88,188],[212,188]],
+      [[150,120],[100,178],[200,178]],
+    ];
+    const downTri = [
+      [[150,258],[58,82],[242,82]],
+      [[150,238],[68,98],[232,98]],
+      [[150,220],[80,110],[220,110]],
+      [[150,205],[90,122],[210,122]],
+      [[150,192],[100,132],[200,132]],
+    ];
+    const triPath = pts => `M${pts[0][0]},${pts[0][1]} L${pts[1][0]},${pts[1][1]} L${pts[2][0]},${pts[2][1]} Z`;
+    const upSvg = upTri.map(t => `<path d="${triPath(t)}" fill="rgba(201,168,76,0.04)" stroke="#c9a84c" stroke-width="1.2" opacity="0.85"/>`).join('\n');
+    const downSvg = downTri.map(t => `<path d="${triPath(t)}" fill="rgba(240,208,128,0.04)" stroke="#f0d080" stroke-width="1.2" opacity="0.75"/>`).join('\n');
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
+  <rect width="300" height="300" fill="#0a0a12"/>
+  <circle cx="${cx}" cy="${cy}" r="130" fill="none" stroke="#c9a84c" stroke-width="0.8" opacity="0.4"/>
+  <circle cx="${cx}" cy="${cy}" r="122" fill="none" stroke="#c9a84c" stroke-width="0.5" opacity="0.3"/>
+  <circle cx="${cx}" cy="${cy}" r="114" fill="none" stroke="#c9a84c" stroke-width="0.5" opacity="0.3"/>
+  ${upSvg}
+  ${downSvg}
+  <circle cx="${cx}" cy="${cy}" r="4" fill="#f0d080" opacity="0.95"/>
+  <circle cx="${cx}" cy="${cy}" r="8" fill="none" stroke="#f0d080" stroke-width="0.8" opacity="0.5"/>
+</svg>`;
+  },
+};
+
+const SACRED_PRESETS = [
+  { name: 'フラワーオブライフ', key: 'flower_of_life' },
+  { name: 'メタトロンキューブ', key: 'metatrons_cube' },
+  { name: '黄金螺旋',           key: 'golden_spiral' },
+  { name: 'Sri Yantra',         key: 'sri_yantra' },
+  { name: 'ベジカパイシス',     key: 'vesica_piscis' },
+  { name: 'ペンタグラム',       key: 'pentagram' },
+];
+
+function initSacredGeometry() {
+  document.getElementById('sacredLockIcon').style.display = 'none';
+  document.getElementById('sacredAiArea').innerHTML = `
+    <div class="ai-input-wrap">
+      <input class="ai-input" id="sacredKeyword" placeholder="例：金・神秘・深宇宙・紫">
+      <button class="btn-ai" id="sacredAiBtn" onclick="runSacredCustom()">✦ カスタム生成</button>
+    </div>
+    <div class="ai-status" id="sacredStatus"><div class="ai-dot"></div><span>神聖幾何学SVGを生成中...</span></div>
+    <div class="sacred-chips" id="sacredPresets"></div>
+    <div class="svg-preview-wrap" id="sacredPreview"></div>
+  `;
+  const grid = document.getElementById('sacredPresets');
+  SACRED_PRESETS.forEach(p => {
+    const chip = document.createElement('button');
+    chip.className = 'sacred-chip';
+    chip.textContent = p.name;
+    chip.onclick = () => runSacredPreset(p.key, p.name, chip);
+    grid.appendChild(chip);
+  });
+}
+
+async function runSacredPreset(key, name, btn) {
+  document.querySelectorAll('.sacred-chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  showStatus('sacredStatus', `${name} を描画中...`);
+  try {
+    await generateSacredSvg(name, key);
+  } catch(e) {
+    showStatus('sacredStatus', '⚠ ' + e.message);
+    setTimeout(() => hideStatus('sacredStatus'), 3000); return;
+  }
+  hideStatus('sacredStatus');
+}
+
+async function runSacredCustom() {
+  const kw = document.getElementById('sacredKeyword').value.trim();
+  if (!kw) return;
+  const btn = document.getElementById('sacredAiBtn');
+  btn.disabled = true;
+  showStatus('sacredStatus', '神聖幾何学SVGを生成中...');
+  try {
+    const raw = await callClaude(
+      `あなたは神聖幾何学とSVGの専門家です。指定された神聖幾何学図形をSVGコードで生成してください。
+ルール：
+- viewBox="0 0 300 300" で生成
+- 数学的に正確な図形を描く
+- <svg>タグから</svg>タグまでのSVGコードのみ返す。説明文・コードブロック記号は不要
+- strokeとfillのみ使用、外部リソース不使用
+- スタイルキーワードに合わせた色を使用`,
+      `図形：フラワーオブライフ\nスタイル：${kw}`
+    );
+    const svgMatch = raw.match(/<svg[\s\S]*<\/svg>/i);
+    if (!svgMatch) throw new Error('SVGの生成に失敗しました');
+    const svgCode = svgMatch[0];
+    STATE.sacredSvg = svgCode;
+    const preview = document.getElementById('sacredPreview');
+    preview.innerHTML = svgCode;
+    preview.classList.add('show');
+    await applySvgToCanvas(svgCode);
+  } catch(e) {
+    showStatus('sacredStatus', '⚠ ' + e.message);
+    setTimeout(() => hideStatus('sacredStatus'), 3000);
+    btn.disabled = false; return;
+  }
+  hideStatus('sacredStatus');
+  btn.disabled = false;
+}
+
+async function generateSacredSvg(geometryName, styleKeywordsOrKey) {
+  const keyMap = {
+    'フラワーオブライフ': 'flower_of_life',
+    'メタトロンキューブ': 'metatrons_cube',
+    '黄金螺旋':           'golden_spiral',
+    'Sri Yantra':         'sri_yantra',
+    'ベジカパイシス':     'vesica_piscis',
+    'ペンタグラム':       'pentagram',
+  };
+  const key = SACRED_SVG_GENERATORS[styleKeywordsOrKey]
+    ? styleKeywordsOrKey
+    : keyMap[geometryName];
+  if (!key || !SACRED_SVG_GENERATORS[key])
+    throw new Error(`"${geometryName}" のオフライン生成は未対応です`);
+  const svgCode = SACRED_SVG_GENERATORS[key]();
+  STATE.sacredSvg = svgCode;
+  const preview = document.getElementById('sacredPreview');
+  if (preview) { preview.innerHTML = svgCode; preview.classList.add('show'); }
+  await applySvgToCanvas(svgCode);
+}
+
+function applySvgToCanvas(svgCode) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      STATE.photoImg = img;
+      STATE.photoPos = { x: 0, y: 0 };
+      STATE.photoScale = 1.0;
+      document.getElementById('scaleRange').value = 1.0;
+      document.getElementById('scaleVal').textContent = '100%';
+      setMode('photo');
+      redraw();
+      resolve();
+    };
+    img.onerror = () => reject(new Error('SVG描画エラー'));
+    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgCode);
+  });
+}
+
+// ── AIコンセプト生成 (Creator) ──
+function initConceptGenerator() {
+  document.getElementById('conceptLockIcon').style.display = 'none';
+  document.getElementById('conceptAiArea').innerHTML = `
+    <div class="ai-input-wrap">
+      <input class="ai-input" id="conceptKeyword" placeholder="例：推し活・誕生日・瞑想・宇宙">
+      <button class="btn-ai-full" id="conceptAiBtn" onclick="runConceptGenerator()">✦ シーンからデザインを一括生成</button>
+    </div>
+    <div class="ai-status" id="conceptStatus"><div class="ai-dot"></div><span>AIがデザインコンセプトを考えています...</span></div>
+    <div class="ai-chips" id="conceptChips"></div>
+  `;
+}
+
+async function runConceptGenerator() {
+  const kw = document.getElementById('conceptKeyword').value.trim();
+  if (!kw) return;
+  const btn = document.getElementById('conceptAiBtn');
+  btn.disabled = true;
+  showStatus('conceptStatus', 'AIがデザインコンセプトを考えています...');
+  try {
+    const raw = await callClaude(
+      `あなたはステッカーデザインのプロです。シーンに最適なデザインコンセプトを3案提案してください。
+必ずJSONのみで返してください。形式：
+{"concepts":[{"name":"コンセプト名","shape":"circle|square|star|heart","bg":"#hex","textColor":"#hex","text":"ステッカーテキスト（12文字以内）","desc":"一言説明"}]}`,
+      `シーン：${kw}`
+    );
+    const data = JSON.parse(raw.replace(/```json|```/g, '').trim());
+    const chips = document.getElementById('conceptChips');
+    chips.innerHTML = '';
+    data.concepts.forEach(con => {
+      const chip = document.createElement('button');
+      chip.className = 'ai-chip';
+      chip.style.cssText = `background:${con.bg};color:${con.textColor};border-color:${con.textColor}44;display:block;width:100%;text-align:left;padding:12px 16px;border-radius:12px;margin-bottom:4px;`;
+      chip.innerHTML = `<b>${con.name}</b><br><span style="font-size:0.75rem;opacity:0.8">${con.desc}</span>`;
+      chip.onclick = () => {
+        STATE.bgColor = con.bg; STATE.textColor = con.textColor;
+        STATE.text = con.text; STATE.shape = con.shape;
+        document.getElementById('bgColor').value = con.bg;
+        document.getElementById('textColor').value = con.textColor;
+        document.getElementById('textInput').value = con.text;
+        document.querySelectorAll('.btn-shape').forEach(b => {
+          b.classList.toggle('active', b.getAttribute('onclick')?.includes(`'${con.shape}'`));
+        });
+        setMode('color');
+        redraw();
+      };
+      chips.appendChild(chip);
+    });
+  } catch(e) {
+    showStatus('conceptStatus', '⚠ ' + e.message);
+    setTimeout(() => hideStatus('conceptStatus'), 3000);
+    btn.disabled = false; return;
+  }
+  hideStatus('conceptStatus');
+  btn.disabled = false;
+}
+
+// ═══════════════════════════════════════
+// プランUI更新
+// ═══════════════════════════════════════
+function updatePlanUI() {
+  const badge = document.getElementById('planBadge');
+  const info = document.getElementById('currentPlanInfo');
+  if (IS_CREATOR) {
+    badge.textContent = 'Creator プラン'; badge.className = 'plan-badge creator';
+    document.getElementById('creatorPlanCard').style.cssText = 'opacity:0.5;pointer-events:none;';
+    document.getElementById('proPlanCard').style.cssText = 'opacity:0.5;pointer-events:none;';
+    info.textContent = '✦ Creator プラン利用中 — 全機能が有効です';
+    info.style.display = 'block';
+  } else if (IS_PRO) {
+    badge.textContent = 'Pro プラン'; badge.className = 'plan-badge pro';
+    document.getElementById('proPlanCard').style.cssText = 'opacity:0.5;pointer-events:none;';
+    info.textContent = '✦ Pro プラン利用中';
+    info.style.display = 'block';
+  }
+}
+
+// ═══════════════════════════════════════
+// Stripe 決済
+// ═══════════════════════════════════════
+async function subscribePlan(plan) {
+  try {
+    const response = await fetch(`${BACKEND_URL}/subscribe`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ plan }),
+    });
+    if (!response.ok) throw new Error('サブスクリプションリクエストに失敗しました');
+    const data = await response.json();
+    if (data.url) {
+      window.location.href = data.url;
     } else {
-        STATE.textPos.x += dx;
-        STATE.textPos.y += dy;
+      alert('Stripe決済URLの取得に失敗しました。');
     }
-    dragState.last = p;
-    redraw();
+  } catch (error) {
+    console.error('Stripe error:', error);
+    alert('サーバーとの通信に失敗しました。\nFastAPIがポート8000で起動しているか確認してください。');
+  }
 }
 
-function onDragEnd() { dragState = null; }
-
-// ─── Premium UI 初期化 ────────────────────────────────────
-(function() {
-    if (IS_PREMIUM) {
-        const btn = document.getElementById('premiumBtn');
-        if (btn) {
-            btn.innerHTML = '<div style="background:#d1fae5;border:2px solid #10b981;border-radius:12px;padding:14px;text-align:center;font-weight:800;color:#065f46;font-size:0.95rem">✅ プレミアム購入済み・透かしなしで保存できます</div>';
-        }
-    }
-})();
-
-// ─── Export ───────────────────────────────────────────────
+// ═══════════════════════════════════════
+// PNG書き出し
+// ═══════════════════════════════════════
 function downloadPNG() {
-    const EXPORT = 1000;
-    const offCanvas = document.createElement('canvas');
-    offCanvas.width = EXPORT;
-    offCanvas.height = EXPORT;
-    const offCtx = offCanvas.getContext('2d');
-    const scale = EXPORT / SIZE;
-
-    offCtx.clearRect(0, 0, EXPORT, EXPORT);
-
-    // ── クリップ → 背景塗り → 写真（drawFrameと同じ順序）
-    offCtx.save();
-    offCtx.scale(scale, scale);
-    clipShape(offCtx, SIZE);
-
-    // 背景色をクリップ内に塗る
-    offCtx.fillStyle = STATE.bgColor;
-    offCtx.fillRect(0, 0, SIZE, SIZE);
-
-    // 写真
-    if (STATE.photoImg) {
-        const img = STATE.photoImg;
-        const asp = img.width / img.height;
-        const bw = asp >= 1 ? SIZE * asp : SIZE;
-        const bh = asp >= 1 ? SIZE : SIZE / asp;
-        offCtx.drawImage(img,
-            STATE.photoPos.x, STATE.photoPos.y,
-            bw * STATE.photoScale, bh * STATE.photoScale
-        );
+  const EXPORT = IS_CREATOR ? 3000 : 1000;
+  const off = document.createElement('canvas');
+  off.width = EXPORT; off.height = EXPORT;
+  const offCtx = off.getContext('2d');
+  const scale = EXPORT / SIZE;
+  offCtx.clearRect(0, 0, EXPORT, EXPORT);
+  offCtx.save();
+  offCtx.scale(scale, scale);
+  clipShape(offCtx, SIZE);
+  offCtx.fillStyle = STATE.bgColor;
+  offCtx.fillRect(0, 0, SIZE, SIZE);
+  if (STATE.photoImg) {
+    const img = STATE.photoImg;
+    const asp = img.width / img.height;
+    const bw = asp >= 1 ? SIZE*asp : SIZE;
+    const bh = asp >= 1 ? SIZE : SIZE/asp;
+    offCtx.drawImage(img, STATE.photoPos.x, STATE.photoPos.y, bw*STATE.photoScale, bh*STATE.photoScale);
+  }
+  offCtx.restore();
+  if (STATE.text) {
+    const fs = STATE.fontSize * scale;
+    offCtx.font = `900 ${fs}px 'Outfit', sans-serif`;
+    offCtx.textAlign = 'left'; offCtx.textBaseline = 'top';
+    if (STATE.textShadow) {
+      offCtx.strokeStyle = '#000';
+      offCtx.lineWidth = fs * 0.18;
+      offCtx.lineJoin = 'round';
+      offCtx.strokeText(STATE.text, STATE.textPos.x*scale, STATE.textPos.y*scale);
     }
-    offCtx.restore();
-
-    // テキスト
-    const txt = document.getElementById('textInput').value;
-    if (txt) {
-        const fs = STATE.fontSize * scale;
-        offCtx.font = `900 ${fs}px 'Outfit', sans-serif`;
-        offCtx.textAlign = 'left';
-        offCtx.textBaseline = 'top';
-        if (STATE.textShadow) {
-            offCtx.strokeStyle = '#000';
-            offCtx.lineWidth = fs * 0.18;
-            offCtx.lineJoin = 'round';
-            offCtx.strokeText(txt, STATE.textPos.x * scale, STATE.textPos.y * scale);
-        }
-        offCtx.fillStyle = STATE.textColor;
-        offCtx.fillText(txt, STATE.textPos.x * scale, STATE.textPos.y * scale);
-    }
-
-    // ウォーターマーク（フリー版のみ）
-    if (!IS_PREMIUM) {
-        offCtx.font = `500 ${EXPORT * 0.024}px sans-serif`;
-        offCtx.fillStyle = 'rgba(0,0,0,0.22)';
-        offCtx.textAlign = 'center';
-        offCtx.textBaseline = 'bottom';
-        offCtx.fillText('Powered by Sticker Studio Free', EXPORT/2, EXPORT - EXPORT*0.013);
-    }
-
-    // ダウンロード
-    const a = document.createElement('a');
-    a.download = `sticker_${STATE.shape}.png`;
-    a.href = offCanvas.toDataURL('image/png');
-    a.click();
+    offCtx.fillStyle = STATE.textColor;
+    offCtx.fillText(STATE.text, STATE.textPos.x*scale, STATE.textPos.y*scale);
+  }
+  if (!IS_PRO) {
+    offCtx.font = `500 ${EXPORT*0.024}px sans-serif`;
+    offCtx.fillStyle = 'rgba(255,255,255,0.15)';
+    offCtx.textAlign = 'center'; offCtx.textBaseline = 'bottom';
+    offCtx.fillText('Sticker Studio Free', EXPORT/2, EXPORT - EXPORT*0.013);
+  }
+  const a = document.createElement('a');
+  a.download = `sticker_${STATE.shape}_${EXPORT}px.png`;
+  a.href = off.toDataURL('image/png');
+  a.click();
 }
+
+// ── モーダル ──
+function showGuide() { document.getElementById('guideModal').style.display = 'flex'; }
+function hideGuide() { document.getElementById('guideModal').style.display = 'none'; }
+
+// ═══════════════════════════════════════
+// 初期化
+// ═══════════════════════════════════════
+updatePlanUI();
+if (getApiKey()) { initAiFeatures(); }
+else {
+  if (IS_PRO || IS_CREATOR) {
+    setTimeout(() => { document.getElementById('apikeyModal').style.display = 'flex'; }, 800);
+  }
+}
+redraw();
 </script>
 </body>
 </html>
